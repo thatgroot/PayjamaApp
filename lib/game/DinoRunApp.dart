@@ -15,31 +15,33 @@ class DinoRunApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GameWidget<DinoRun>.controlled(
-      // This will dislpay a loading bar until [DinoRun] completes
-      // its onLoad method.
-      loadingBuilder: (conetxt) => const Center(
-        child: SizedBox(
-          width: 200,
-          child: LinearProgressIndicator(),
+    return Scaffold(
+      body: GameWidget<DinoRun>.controlled(
+        // This will dislpay a loading bar until [DinoRun] completes
+        // its onLoad method.
+        loadingBuilder: (conetxt) => const Center(
+          child: SizedBox(
+            width: 200,
+            child: LinearProgressIndicator(),
+          ),
         ),
-      ),
-      // Register all the overlays that will be used by this game.
-      overlayBuilderMap: {
-        MainMenu.id: (_, game) => MainMenu(game),
-        PauseMenu.id: (_, game) => PauseMenu(game),
-        Hud.id: (_, game) => Hud(game),
-        GameOverMenu.id: (_, game) => GameOverMenu(game),
-        SettingsMenu.id: (_, game) => SettingsMenu(game),
-      },
-      // By default MainMenu overlay will be active.
-      initialActiveOverlays: const [MainMenu.id],
-      gameFactory: () => DinoRun(
-        // Use a fixed resolution camera to avoid manually
-        // scaling and handling different screen sizes.
-        camera: CameraComponent.withFixedResolution(
-          width: 360,
-          height: 180,
+        // Register all the overlays that will be used by this game.
+        overlayBuilderMap: {
+          MainMenu.id: (_, game) => MainMenu(game),
+          PauseMenu.id: (_, game) => PauseMenu(game),
+          Hud.id: (_, game) => Hud(game),
+          GameOverMenu.id: (_, game) => GameOverMenu(game),
+          SettingsMenu.id: (_, game) => SettingsMenu(game),
+        },
+        // By default MainMenu overlay will be active.
+        initialActiveOverlays: const [MainMenu.id],
+        gameFactory: () => DinoRun(
+          // Use a fixed resolution camera to avoid manually
+          // scaling and handling different screen sizes.
+          camera: CameraComponent.withFixedResolution(
+            width: 360,
+            height: 180,
+          ),
         ),
       ),
     );

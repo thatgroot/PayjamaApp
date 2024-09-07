@@ -1,13 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:pyjama_runner/game/DinoRunApp.dart';
 import 'package:pyjama_runner/screens/CharacterDisplayScreen.dart';
+import 'package:pyjama_runner/utils/hive.dart';
 import 'package:pyjama_runner/utils/navigation.dart';
 import 'package:pyjama_runner/widgets/app/Wrapper.dart';
 
-class DailyTasks extends StatelessWidget {
+class DailyTasks extends StatefulWidget {
   const DailyTasks({super.key});
 
   @override
+  State<DailyTasks> createState() => _DailyTasksState();
+}
+
+class _DailyTasksState extends State<DailyTasks> {
+  int currentScore = 0;
+
+  // Method to load the score from Hive
+  void loadScore() {
+    getScore().then((score) {
+      setState(() {
+        currentScore = score;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    loadScore();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    void toGame() {
+      to(context, const DinoRunApp());
+    }
+
     return Wrapper(
       title: "Daily Tasks",
       onBack: () {
@@ -45,21 +73,29 @@ class DailyTasks extends StatelessWidget {
               'Playing',
               'Mini-game where you play a type of Ping Pong for 10 minutes. You need to keep a ball in the air with a paddle and destroy boxes.',
               'assets/images/pyjama/tasks/play.gif',
+              currentScore,
+              toGame,
             ),
             _buildTaskItem(
               'Walking',
               'Mini-game where you play a Jump and Run for 10 minutes and collect coins.',
               'assets/images/pyjama/tasks/walk.gif',
+              currentScore,
+              toGame,
             ),
             _buildTaskItem(
               'Feeding',
               'Mini-game where you cut various foods falling from the sky with a knife in the middle for 5 minutes.',
               'assets/images/pyjama/tasks/feed.gif',
+              currentScore,
+              toGame,
             ),
             _buildTaskItem(
               'Cleaning',
               'Mini-game where you swipe the screen for 4 minutes to clean your character.',
               'assets/images/pyjama/tasks/clean.gif',
+              currentScore,
+              toGame,
             ),
           ],
         ),
@@ -67,7 +103,10 @@ class DailyTasks extends StatelessWidget {
     );
   }
 
-  Widget _buildTaskItem(String title, String description, String image) {
+  Widget _buildTaskItem(String title, String description, String image,
+      int score, void Function()? onPressed) {
+    // score state
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.all(16),
@@ -97,21 +136,33 @@ class DailyTasks extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
+                    TextButton(
+                      onPressed: onPressed,
+                      style: ButtonStyle(
+                        padding: WidgetStateProperty.all(
+                          const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                        ),
+                        backgroundColor: WidgetStateProperty.all(
+                          Colors.white.withOpacity(0.2),
+                        ),
+                        shape: WidgetStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          Image.asset('assets/images/pyjama/pyjama.png',
-                              width: 26, height: 26),
+                          Image.asset(
+                            'assets/images/pyjama/pyjama.png',
+                            width: 26,
+                            height: 26,
+                          ),
                           const SizedBox(width: 4),
-                          const Text(
-                            '100',
-                            style: TextStyle(
+                          Text(
+                            score.toString(),
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -119,7 +170,7 @@ class DailyTasks extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ),
+                    )
                   ],
                 ),
                 const SizedBox(height: 8),

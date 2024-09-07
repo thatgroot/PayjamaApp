@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/components.dart';
+import 'package:pyjama_runner/utils/hive.dart';
 
 import '/game/dino.dart';
 import '/widgets/hud.dart';
@@ -135,6 +136,9 @@ class DinoRun extends FlameGame with TapDetector, HasCollisionDetection {
     if (playerData.lives <= 0) {
       overlays.add(GameOverMenu.id);
       overlays.remove(Hud.id);
+      getScore().then((savedScore) {
+        saveScore(savedScore + playerData.currentScore);
+      });
       pauseEngine();
       AudioManager.instance.pauseBgm();
     }
