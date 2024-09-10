@@ -17,7 +17,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void _navigateToNameScreen() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => NameInputScreen()),
+      MaterialPageRoute(builder: (context) => const NameInputScreen()),
     );
   }
 

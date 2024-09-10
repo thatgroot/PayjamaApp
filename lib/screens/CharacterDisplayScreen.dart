@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pyjama_runner/widgets/app/Sidebar.dart';
 
 class CharacterDisplayScreen extends StatefulWidget {
@@ -9,6 +10,24 @@ class CharacterDisplayScreen extends StatefulWidget {
 }
 
 class _CharacterDisplayScreenState extends State<CharacterDisplayScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Lock orientation to portrait when entering this screen
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
+  @override
+  void dispose() {
+    // Optionally reset to allow all orientations when leaving the screen
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    super.dispose();
+  }
+
   final List<Activity> activities = [
     Activity(
         name: 'cuddle',

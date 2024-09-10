@@ -1,5 +1,14 @@
+import 'dart:developer';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pyjama_runner/screens/CharacterDisplayScreen.dart';
+import 'package:pyjama_runner/screens/NameInputScreen.dart';
 import 'package:pyjama_runner/screens/WelcomeScreen.dart';
+import 'package:pyjama_runner/services/context_utility.dart';
+import 'package:pyjama_runner/utils/hive.dart';
+import 'package:pyjama_runner/utils/navigation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class WalletConnect extends StatefulWidget {
   const WalletConnect({super.key});
@@ -11,14 +20,46 @@ class WalletConnect extends StatefulWidget {
 class _WalletConnectState extends State<WalletConnect> {
   @override
   void initState() {
+    getData("connected").then((connected) {
+      log("connected: $connected", name: "WalletConnect");
+      if (connected != null && connected) {
+        getData("name").then((name) {
+          if (name != null) {
+            to(ContextUtility.context!, const CharacterDisplayScreen());
+          } else {
+            to(ContextUtility.context!, const NameInputScreen());
+          }
+        });
+      } else {
+        openPhantom();
+      }
+    });
     super.initState();
   }
 
-  void _navigateToWelcome() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+  void openPhantom() {
+    Map<String, dynamic> queryParameters = {
+      "dapp_encryption_public_key":
+          "DKqRWGgM5FWgfMEWF7M9dmziBgeLce3SKJq2AW3Kk372",
+      "cluster": "mainnet-beta",
+      "redirect_link": "pyjamaapp://product?handleQuery=onConnect",
+    };
+    final url = Uri(
+      scheme: "https",
+      host: "phantom.app",
+      path: "/ul/v1/connect",
+      queryParameters: queryParameters,
     );
+
+    launchUrl(
+      url,
+      mode: LaunchMode.externalNonBrowserApplication,
+    );
+
+    // Navigator.pushReplacement(
+    //   context,
+    //   MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+    // );
   }
 
   @override
@@ -74,7 +115,7 @@ class _WalletConnectState extends State<WalletConnect> {
                   const SizedBox(height: 24),
                   TextButton(
                     onPressed: () {
-                      _navigateToWelcome();
+                      openPhantom();
                     },
                     child: SizedBox(
                       width: 272,

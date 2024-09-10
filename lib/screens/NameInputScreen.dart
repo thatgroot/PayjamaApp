@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pyjama_runner/screens/LoadingScreen.dart';
+import 'package:pyjama_runner/utils/hive.dart';
 
 class NameInputScreen extends StatefulWidget {
   const NameInputScreen({super.key});
@@ -9,12 +10,15 @@ class NameInputScreen extends StatefulWidget {
 }
 
 class _NameInputScreenState extends State<NameInputScreen> {
+  String name = ''; // State variable to store the name
+
   @override
   void initState() {
     super.initState();
   }
 
   void _navigateToNameScreen() {
+    saveData("name", name);
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const Loadingscreen()),
@@ -90,11 +94,13 @@ class _NameInputScreenState extends State<NameInputScreen> {
                     ),
                     const SizedBox(height: 16),
                     TextField(
+                      style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 0.0,
                         ), // Adjust padding as needed
                         filled: true,
+
                         fillColor: Colors.transparent, // No background color
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(4),
@@ -120,6 +126,12 @@ class _NameInputScreenState extends State<NameInputScreen> {
                         ),
                       ),
                       textAlign: TextAlign.center,
+                      onChanged: (text) {
+                        setState(() {
+                          name =
+                              text; // Update the name state when text changes
+                        });
+                      },
                     ),
                   ],
                 ),

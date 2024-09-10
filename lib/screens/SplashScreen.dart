@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pyjama_runner/screens/WalletConnect.dart';
 import 'package:pyjama_runner/screens/WelcomeScreen.dart';
+import 'package:pyjama_runner/services/context_utility.dart';
 import 'package:pyjama_runner/utils/navigation.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _navigateToHome() async {
     await Future.delayed(const Duration(seconds: 6));
-    to(context, const WalletConnect());
+    to(ContextUtility.context, const WalletConnect());
   }
 
   @override

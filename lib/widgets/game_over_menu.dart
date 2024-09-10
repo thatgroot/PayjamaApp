@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
+import 'package:pyjama_runner/screens/CharacterDisplayScreen.dart';
+import 'package:pyjama_runner/utils/navigation.dart';
 
 import '/widgets/hud.dart';
 import '/game/dino_run.dart';
@@ -80,7 +82,7 @@ class GameOverMenu extends StatelessWidget {
                         ),
                       ),
                       onPressed: () {
-                        SystemNavigator.pop();
+                        to(context, const CharacterDisplayScreen());
                       },
                     ),
                   ],
