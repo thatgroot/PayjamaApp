@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/screens/CharacterDisplayScreen.dart';
+import 'package:pyjama_runner/screens/character_display_screen.dart';
 import 'package:pyjama_runner/utils/navigation.dart';
 import 'package:pyjama_runner/widgets/app/Wrapper.dart';
 

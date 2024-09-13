@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "556096164784",
+    "project_id": "pyjamaapp",
+    "storage_bucket": "pyjamaapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556096164784:android:2ae4fe385dad97e5eb3c75",
+        "android_client_info": {
+          "package_name": "com.pyjama_runner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCB6aKymDc0RFrhkpX_ExRQZDOLlIs7LYE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

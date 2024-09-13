@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/screens/WalletConnect.dart';
-import 'package:pyjama_runner/screens/WelcomeScreen.dart';
+import 'package:pyjama_runner/screens/wallet_connect.dart';
 import 'package:pyjama_runner/services/context_utility.dart';
 import 'package:pyjama_runner/utils/navigation.dart';
 

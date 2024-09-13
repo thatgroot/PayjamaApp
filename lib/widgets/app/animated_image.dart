@@ -6,10 +6,10 @@ class AnimatedImage extends StatefulWidget {
   const AnimatedImage({super.key, required this.image});
 
   @override
-  _AnimatedImageState createState() => _AnimatedImageState();
+  AnimatedImageState createState() => AnimatedImageState();
 }
 
-class _AnimatedImageState extends State<AnimatedImage>
+class AnimatedImageState extends State<AnimatedImage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _animation;

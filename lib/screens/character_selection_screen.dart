@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/screens/CharacterDisplayScreen.dart';
+import 'package:pyjama_runner/screens/character_display_screen.dart';
 
 class CharacterSelectionScreen extends StatefulWidget {
   const CharacterSelectionScreen({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/screens/NameInputScreen.dart';
+import 'package:pyjama_runner/screens/name_input_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});

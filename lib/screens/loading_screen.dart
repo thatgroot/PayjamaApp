@@ -1,9 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/screens/CharacterSelectionScreen.dart';
-import 'package:pyjama_runner/screens/NameInputScreen.dart';
-import 'package:pyjama_runner/widgets/app/AnimatedImage.dart';
-import 'package:pyjama_runner/widgets/app/AnimatedProgressBar.dart';
-import 'package:pyjama_runner/widgets/app/CustomProgressBar.dart';
+import 'package:pyjama_runner/screens/character_selection_screen.dart';
+import 'package:pyjama_runner/widgets/app/animated_image.dart';
+import 'package:pyjama_runner/widgets/app/animated_progress_bar.dart';
 
 class Loadingscreen extends StatefulWidget {
   const Loadingscreen({super.key});
@@ -56,7 +56,7 @@ class _LoadingscreenState extends State<Loadingscreen> {
                     );
                   }
                   // Handle progress change
-                  print('Progress: $progress');
+                  log('Loading Screen -> Progress: $progress');
                 },
               ),
               const SizedBox(

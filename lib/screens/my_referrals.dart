@@ -1,70 +1,85 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/screens/CharacterDisplayScreen.dart';
+import 'package:flutter/services.dart';
+import 'package:pyjama_runner/screens/character_display_screen.dart';
+import 'package:pyjama_runner/providers/providers.dart';
 import 'package:pyjama_runner/utils/navigation.dart';
 import 'package:pyjama_runner/widgets/app/Wrapper.dart';
+import 'package:provider/provider.dart';
 
 class MyReferrals extends StatelessWidget {
-  const MyReferrals({super.key});
+  final String userId;
+
+  const MyReferrals({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
-    return Wrapper(
-      title: "My Referrals",
-      onBack: () {
-        to(context, const CharacterDisplayScreen());
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 36),
-        child: ListView(
-          children: const [
-            EarnMorePJCCard(),
-            SizedBox(height: 32),
-            ShareInviteLinkCard(),
-            SizedBox(height: 16),
-            Text(
-              'My Referrals',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w500,
-                height: 0,
-              ),
-            ),
-            SizedBox(height: 24),
-            Column(
-              children: [
-                ReferralTile(
-                  name: 'Babar',
-                  level: 'LV 2',
-                  avatar: "assets/icons/navigation/profile.png",
-                  badge: "assets/images/pyjama/pyjama.png",
-                ),
-                SizedBox(height: 10),
-                ReferralTile(
-                  name: 'Karim',
-                  level: 'LV 3',
-                  avatar: "assets/icons/navigation/profile.png",
-                  badge: "assets/images/pyjama/pyjama.png",
-                ),
-                SizedBox(height: 10),
-                ReferralTile(
-                  name: 'Tariqo',
-                  level: 'LV 4',
-                  avatar: "assets/icons/navigation/profile.png",
-                  badge: "assets/images/pyjama/pyjama.png",
-                ),
-              ],
-            ),
-          ],
-        ),
+    return ChangeNotifierProvider(
+      create: (_) =>
+          ReferralProvider()..loadReferralData("rashidiqbal" ?? userId),
+      child: Wrapper(
+        title: "My Referrals",
+        onBack: () => to(context, const CharacterDisplayScreen()),
+        child: const _MyReferralsContent(),
       ),
     );
   }
 }
 
+class _MyReferralsContent extends StatelessWidget {
+  const _MyReferralsContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ReferralProvider>(
+      builder: (context, referralProvider, child) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 36),
+          child: ListView(
+            children: [
+              EarnMorePJCCard(totalEarnings: referralProvider.totalEarnings),
+              const SizedBox(height: 32),
+              ShareInviteLinkCard(
+                referralCode: referralProvider.referralCode,
+                onShare: referralProvider.shareReferralCode,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'My Referrals',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w500,
+                  height: 0,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Column(
+                children: referralProvider.referrals
+                    .map((referral) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: ReferralTile(
+                            name: referral['name'] ?? 'Unknown',
+                            level: 'LV ${referral['level'] ?? 1}',
+                            avatar: referral['avatar'] ??
+                                "assets/icons/navigation/profile.png",
+                            badge: "assets/images/pyjama/pyjama.png",
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 class EarnMorePJCCard extends StatelessWidget {
-  const EarnMorePJCCard({super.key});
+  final int totalEarnings;
+
+  const EarnMorePJCCard({super.key, required this.totalEarnings});
 
   @override
   Widget build(BuildContext context) {
@@ -88,8 +103,8 @@ class EarnMorePJCCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Image.asset("assets/images/pyjama/pyjama.png", height: imageHeight),
-          const Text(
-            'Earn More PJC',
+          Text(
+            'Earned $totalEarnings PJC',
             style: textStyle,
             textAlign: TextAlign.center,
           ),
@@ -100,10 +115,18 @@ class EarnMorePJCCard extends StatelessWidget {
 }
 
 class ShareInviteLinkCard extends StatelessWidget {
-  const ShareInviteLinkCard({super.key});
+  final String referralCode;
+  final VoidCallback onShare;
+
+  const ShareInviteLinkCard({
+    super.key,
+    required this.referralCode,
+    required this.onShare,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // ... (keep the existing styling constants)
     const double containerWidth = 352;
     const double containerHeight = 369;
     const double imageWidth = 279;
@@ -116,14 +139,6 @@ class ShareInviteLinkCard extends StatelessWidget {
     const Color buttonBorderColor = Colors.white;
     const Color shareButtonColor = Color(0xFF08FAFA);
     const Color shareTextColor = Color(0xFF272741);
-
-    const textStyle = TextStyle(
-      fontFamily: 'Outfit',
-      fontWeight: FontWeight.w500,
-      color: Colors.white,
-      fontSize: 16,
-      height: 0.09,
-    );
 
     return Container(
       width: containerWidth,
@@ -162,24 +177,33 @@ class ShareInviteLinkCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            width: 278,
-            height: buttonHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              border: Border.all(width: 2, color: buttonBorderColor),
-              borderRadius: BorderRadius.circular(buttonBorderRadius),
-            ),
-            child: const Center(
-              child: Text(
-                'https://pyjama-coin.com/ref=PJC123',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontFamily: 'Outfit',
-                  fontWeight: FontWeight.w400,
-                  height: 0.17,
+          GestureDetector(
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: referralCode));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('Referral code copied to clipboard')),
+              );
+            },
+            child: Container(
+              width: 278,
+              height: buttonHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(width: 2, color: buttonBorderColor),
+                borderRadius: BorderRadius.circular(buttonBorderRadius),
+              ),
+              child: Center(
+                child: Text(
+                  referralCode,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontFamily: 'Outfit',
+                    fontWeight: FontWeight.w400,
+                    height: 0.17,
+                  ),
                 ),
               ),
             ),
@@ -197,30 +221,42 @@ class ShareInviteLinkCard extends StatelessWidget {
                     border: Border.all(width: 2, color: buttonBorderColor),
                     borderRadius: BorderRadius.circular(buttonBorderRadius),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       'Refer',
                       textAlign: TextAlign.center,
-                      style: textStyle.copyWith(fontSize: 16),
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                        fontSize: 16,
+                        height: 0.09,
+                      ),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Container(
-                  height: buttonHeight,
-                  decoration: BoxDecoration(
-                    color: shareButtonColor,
-                    borderRadius: BorderRadius.circular(buttonBorderRadius),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Share',
-                      textAlign: TextAlign.center,
-                      style: textStyle.copyWith(
-                        fontSize: 16,
-                        color: shareTextColor,
+                child: GestureDetector(
+                  onTap: onShare,
+                  child: Container(
+                    height: buttonHeight,
+                    decoration: BoxDecoration(
+                      color: shareButtonColor,
+                      borderRadius: BorderRadius.circular(buttonBorderRadius),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Share',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontWeight: FontWeight.w500,
+                          color: shareTextColor,
+                          fontSize: 16,
+                          height: 0.09,
+                        ),
                       ),
                     ),
                   ),

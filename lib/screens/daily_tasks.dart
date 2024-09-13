@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/game/DinoRunApp.dart';
-import 'package:pyjama_runner/screens/CharacterDisplayScreen.dart';
+import 'package:pyjama_runner/game/dino_run_app.dart';
+import 'package:pyjama_runner/screens/character_display_screen.dart';
 import 'package:pyjama_runner/utils/hive.dart';
 import 'package:pyjama_runner/utils/navigation.dart';
 import 'package:pyjama_runner/widgets/app/Wrapper.dart';
@@ -58,7 +58,7 @@ class _DailyTasksState extends State<DailyTasks> {
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: const Text(
+                child: Text(
                   'Daily Tasks',
                   style: TextStyle(
                     color: Colors.white,

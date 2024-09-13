@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/screens/LoadingScreen.dart';
+import 'package:pyjama_runner/screens/loading_screen.dart';
 import 'package:pyjama_runner/utils/hive.dart';
 
 class NameInputScreen extends StatefulWidget {

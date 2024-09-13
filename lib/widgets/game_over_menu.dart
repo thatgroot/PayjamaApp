@@ -2,13 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
-import 'package:pyjama_runner/screens/CharacterDisplayScreen.dart';
+import 'package:pyjama_runner/screens/character_display_screen.dart';
 import 'package:pyjama_runner/utils/navigation.dart';
 
 import '/widgets/hud.dart';
 import '/game/dino_run.dart';
-import '/widgets/main_menu.dart';
 import '/models/player_data.dart';
 import '/game/audio_manager.dart';
 

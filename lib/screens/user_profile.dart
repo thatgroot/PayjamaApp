@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/screens/CharacterDisplayScreen.dart';
+import 'package:pyjama_runner/screens/character_display_screen.dart';
 
 class UserProfile extends StatelessWidget {
   UserProfile({super.key});
@@ -65,18 +65,26 @@ class UserProfile extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                'kaynaaslisaa@gmail.com',
-                style: TextStyle(
-                  color: Color(0xFF6261D4),
-                  fontSize: 14,
+            SizedBox(
+              height: 36,
+              width: 172,
+              child: TextField(
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide:
+                        BorderSide.none, // This removes the default border
+                  ),
                 ),
+                style: const TextStyle(
+                  color: Color(0xFF6261D4),
+                  fontSize: 12,
+                ),
+                controller: TextEditingController()
+                  ..text = 'kaynaaslisaa@gmail.com',
               ),
             ),
             const SizedBox(height: 40),

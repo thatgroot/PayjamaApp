@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pyjama_runner/widgets/app/Sidebar.dart';
+import 'package:pyjama_runner/widgets/app/side_bar.dart';
 
 class CharacterDisplayScreen extends StatefulWidget {
   const CharacterDisplayScreen({super.key});

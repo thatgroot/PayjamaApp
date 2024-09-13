@@ -1,4 +1,5 @@
 {
     "license.year": "auto",
-    "license.author": "Shubham Kamble"
+    "license.author": "Shubham Kamble",
+    "editor.lineNumbers": "on"
 }

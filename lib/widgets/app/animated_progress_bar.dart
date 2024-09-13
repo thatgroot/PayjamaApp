@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/widgets/app/CustomProgressBar.dart';
+import 'package:pyjama_runner/widgets/app/custom_progress_bar.dart';
 
 class AnimatedProgressBar extends StatefulWidget {
   final void Function(double progress)? onProgressChanged;
@@ -7,10 +7,10 @@ class AnimatedProgressBar extends StatefulWidget {
   const AnimatedProgressBar({super.key, this.onProgressChanged});
 
   @override
-  _AnimatedProgressBarState createState() => _AnimatedProgressBarState();
+  AnimatedProgressBarState createState() => AnimatedProgressBarState();
 }
 
-class _AnimatedProgressBarState extends State<AnimatedProgressBar>
+class AnimatedProgressBarState extends State<AnimatedProgressBar>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _progressAnimation;

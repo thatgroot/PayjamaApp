@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/screens/SplashScreen.dart';
+import 'package:pyjama_runner/screens/splash_screen.dart';
 import 'package:pyjama_runner/services/context_utility.dart';
 
 class PyjamaCoinApp extends StatelessWidget {
@@ -8,6 +8,7 @@ class PyjamaCoinApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       navigatorKey: ContextUtility.navigatorKey,
       title: 'PyjamaCoin',
       theme: ThemeData(

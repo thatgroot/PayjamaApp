@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:flutter/services.dart';
-import 'package:pyjama_runner/screens/CharacterDisplayScreen.dart';
-import 'package:pyjama_runner/screens/WelcomeScreen.dart';
+import 'package:pyjama_runner/screens/character_display_screen.dart';
+import 'package:pyjama_runner/screens/welcome_screen.dart';
 import 'package:pyjama_runner/services/context_utility.dart';
 import 'package:pyjama_runner/utils/hive.dart';
 import 'package:pyjama_runner/utils/navigation.dart';
