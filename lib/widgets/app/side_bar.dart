@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pyjama_runner/screens/buy_nfts.dart';
 import 'package:pyjama_runner/screens/daily_tasks.dart';
-import 'package:pyjama_runner/screens/join_with_referral.dart';
 import 'package:pyjama_runner/screens/my_referrals.dart';
 import 'package:pyjama_runner/screens/user_profile.dart';
 
@@ -97,21 +96,6 @@ class SideBar extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const MyReferrals(
-                        userId: "rashidiqbal",
-                      ),
-                    ),
-                  );
-                },
-              ),
-              _buildMenuItem(
-                icon: 'assets/icons/navigation/referrals.png',
-                title: 'Join With Referrals',
-                onTap: () {
-                  // Handle My Referrals tap
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const JoinWithReferralScreen(
                         userId: "rashidiqbal",
                       ),
                     ),

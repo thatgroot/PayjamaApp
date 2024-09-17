@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/screens/welcome_screen.dart';
 import 'package:pyjama_runner/utils/phantom_connect.dart';
 import 'package:url_launcher/url_launcher.dart';
 

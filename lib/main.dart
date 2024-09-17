@@ -1,13 +1,15 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:pyjama_runner/config.dart';
 import 'package:pyjama_runner/providers/phantom.dart';
 import 'package:pyjama_runner/providers/providers.dart';
 import 'package:pyjama_runner/services/context_utility.dart';
 import 'package:pyjama_runner/utils/hive.dart';
 import 'package:pyjama_runner/utils/phantom_connect.dart';
-import 'package:solana/base58.dart';
 import 'firebase_options.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
@@ -22,18 +24,16 @@ late PhantomConnect phantomConnect;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   LinkServices.init();
+
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await initHive();
 
-  // Initialize PhantomConnect
-  phantomConnect = PhantomConnect(
-    appUrl: "https://your-app-url.com",
-    deepLink: "yourapp://", // Replace with your app's deep link scheme
-  );
+  phantomConnect = PhantomConnect(appUrl: appUrl, deepLink: deepLink);
 
   runApp(
     MultiProvider(
@@ -41,7 +41,8 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => ReferralProvider()),
         ChangeNotifierProvider(create: (_) => ReferralJoinProvider()),
         ChangeNotifierProvider(
-            create: (_) => PhantomWalletProvider()), // Add this provider
+          create: (_) => PhantomWalletProvider(),
+        ),
       ],
       child: const PyjamaCoinApp(),
     ),
@@ -53,7 +54,6 @@ void _handleDeepLink() async {
   try {
     final appLinks = AppLinks(); // AppLinks is singleton
 
-// Subscribe to all events (initial link and further)
     final sub = appLinks.uriLinkStream.listen((uri) {
       _processDeepLink(uri);
     });
@@ -62,17 +62,16 @@ void _handleDeepLink() async {
       _processDeepLink(uri);
     });
   } catch (e) {
-    print('Failed to handle deep link: $e');
+    log('Failed to handle deep link: $e');
   }
 }
 
 void _processDeepLink(Uri uri) {
-  print("uri query params ${uri.queryParameters}");
+  log("uri query params ${uri.queryParameters}");
 
   if (phantomConnect.createSession(uri.queryParameters)) {
-    print('Connected to Phantom Wallet');
     final publicKey = phantomConnect.userPublicKey;
-    print('User Public Key: $publicKey');
+    log('User Public Key: $publicKey');
     saveData('publicKey', publicKey);
 
     // Update the PhantomWalletProvider
@@ -83,7 +82,7 @@ void _processDeepLink(Uri uri) {
     Provider.of<PhantomWalletProvider>(ContextUtility.context!, listen: false)
         .fetchBalance();
   } else {
-    print('Failed to connect to Phantom Wallet');
+    log('Failed to connect to Phantom Wallet');
   }
 }
 

@@ -1,7 +1,5 @@
-import 'dart:developer' as dev;
 import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pyjama_runner/services/firebase.dart';
 
 class ReferralSystem {
@@ -17,13 +15,13 @@ class ReferralSystem {
   }
 
   // Register a new user with a referral code
-  Future<void> registerUser(String? by_code, String newId) async {
+  Future<void> registerUser(String? byCode, String newId) async {
     String newReferralCode = generateReferralCode();
 
     Map<String, dynamic> userData = {
       'userId': newId,
       'referralCode': newReferralCode,
-      'referredBy': by_code,
+      'referredBy': byCode,
       'referrals': [],
       'rewards': 0,
     };

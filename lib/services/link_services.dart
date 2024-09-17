@@ -12,9 +12,7 @@ class LinkServices {
   static init() async {
     try {
       AppLinks appLinks = AppLinks();
-
       appLinks.uriLinkStream.listen((uri) {
-        log('onAppLink: $uri');
         uniHandler(uri);
       });
     } on PlatformException catch (e) {
@@ -27,9 +25,7 @@ class LinkServices {
   static uniHandler(Uri? uri) {
     log("uri: $uri", name: "UniServices");
     if (uri == null || uri.queryParameters.isEmpty) return;
-    Map<String, String> params = uri.queryParameters;
-    String code = params['code'] ?? "";
-    log("code: $code", name: "UniServices");
+    // Map<String, String> params = uri.queryParameters;
 
     if (ContextUtility.context == null) return; // Exit if the context is null
 

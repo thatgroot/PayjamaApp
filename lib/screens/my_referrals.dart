@@ -6,7 +6,6 @@ import 'package:pyjama_runner/providers/phantom.dart';
 import 'package:pyjama_runner/screens/character_display_screen.dart';
 import 'package:pyjama_runner/providers/providers.dart';
 import 'package:pyjama_runner/services/firebase.dart';
-import 'package:pyjama_runner/services/referral_tree.dart';
 import 'package:pyjama_runner/utils/navigation.dart';
 import 'package:pyjama_runner/widgets/app/Wrapper.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +36,7 @@ class _MyReferralsState extends State<MyReferrals> {
           await firestoreService.getDocument("info", walletProvider.publicKey!);
       return doc.get('id') as String;
     } catch (error) {
-      print("Error fetching document: $error");
+      log("Error fetching document: $error");
       return "";
     }
   }
@@ -48,20 +47,22 @@ class _MyReferralsState extends State<MyReferrals> {
       future: _fetchReferralCode(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return Wrapper(
+            title: "My Referrals",
+            onBack: () => to(context, const CharacterDisplayScreen()),
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else {
           final referralCode = snapshot.data ?? "";
-          return ChangeNotifierProvider(
-            create: (_) => ReferralProvider()..loadReferralData(widget.userId),
-            child: Wrapper(
-              title: "My Referrals",
-              onBack: () => to(context, const CharacterDisplayScreen()),
-              child: SingleChildScrollView(
-                child:
-                    Container(child: _MyReferralsContent(code: referralCode)),
-              ),
+          return Wrapper(
+            title: "My Referrals",
+            onBack: () => to(context, const CharacterDisplayScreen()),
+            child: SingleChildScrollView(
+              child: _MyReferralsContent(code: referralCode),
             ),
           );
         }
@@ -75,18 +76,17 @@ class ShareInviteLinkCard extends StatelessWidget {
   final String code;
 
   const ShareInviteLinkCard({
-    Key? key,
+    super.key,
     required this.onShare,
     required this.code,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     const double containerWidth = 352;
-    const double containerHeight = 369;
-    const double imageWidth = 279;
-    const double imageHeight = 151;
-    const double buttonHeight = 47;
+    const double imageWidth = 278;
+    const double imageHeight = 156;
+    const double buttonHeight = 42;
     const double borderRadius = 24.0;
     const double buttonBorderRadius = 40.0;
     const Color backgroundColor = Color(0xFF423F6B);
@@ -97,7 +97,6 @@ class ShareInviteLinkCard extends StatelessWidget {
 
     return Container(
       width: containerWidth,
-      height: containerHeight,
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -143,85 +142,69 @@ class ShareInviteLinkCard extends StatelessWidget {
             },
             child: Container(
               width: 278,
-              height: buttonHeight,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 2),
               decoration: BoxDecoration(
                 border: Border.all(width: 2, color: buttonBorderColor),
                 borderRadius: BorderRadius.circular(buttonBorderRadius),
               ),
-              child: Center(
-                child: Text(
-                  "code: $code",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontFamily: 'Outfit',
-                    fontWeight: FontWeight.w400,
-                    height: 0.17,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Referral Code: $code",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontFamily: 'Outfit',
+                      fontWeight: FontWeight.w400,
+                      height: 0.17,
+                    ),
                   ),
-                ),
+                  IconButton(
+                    hoverColor: Colors.black38,
+                    iconSize: 24.0,
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: code));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Referral code copied to clipboard'),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.copy_all_outlined,
+                      color: Colors.white,
+                    ),
+                  )
+                ],
               ),
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Container(
-                  height: buttonHeight,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 2, color: buttonBorderColor),
-                    borderRadius: BorderRadius.circular(buttonBorderRadius),
-                  ),
-                  child: TextButton(
-                    onPressed: () {
-                      // Implement refer functionality
-                    },
-                    child: const Text(
-                      'Refer',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Outfit',
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                        fontSize: 16,
-                        height: 0.09,
-                      ),
-                    ),
+          GestureDetector(
+            onTap: onShare,
+            child: Container(
+              height: buttonHeight,
+              decoration: BoxDecoration(
+                color: shareButtonColor,
+                borderRadius: BorderRadius.circular(buttonBorderRadius),
+              ),
+              child: const Center(
+                child: Text(
+                  'Share',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontWeight: FontWeight.w500,
+                    color: shareTextColor,
+                    fontSize: 16,
+                    height: 0.09,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: GestureDetector(
-                  onTap: onShare,
-                  child: Container(
-                    height: buttonHeight,
-                    decoration: BoxDecoration(
-                      color: shareButtonColor,
-                      borderRadius: BorderRadius.circular(buttonBorderRadius),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Share',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Outfit',
-                          fontWeight: FontWeight.w500,
-                          color: shareTextColor,
-                          fontSize: 16,
-                          height: 0.09,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -238,24 +221,16 @@ class _MyReferralsContent extends StatefulWidget {
 }
 
 class _MyReferralsContentState extends State<_MyReferralsContent> {
-  List<Map<String, dynamic>> referrals = [];
-
   @override
   void initState() {
-    _loadReferrals();
     super.initState();
-  }
 
-  void _loadReferrals() async {
-    ReferralTree tree = ReferralTree();
-    List<Map<String, dynamic>> loadedReferrals =
-        await tree.getReferrals(widget.code, 5);
-    if (mounted) {
-      setState(() {
-        log(loadedReferrals.toString());
-        referrals = loadedReferrals;
-      });
-    }
+    // Load referral data once when the widget is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final referralProvider =
+          Provider.of<ReferralProvider>(context, listen: false);
+      referralProvider.loadReferralData(widget.code);
+    });
   }
 
   @override
@@ -268,7 +243,7 @@ class _MyReferralsContentState extends State<_MyReferralsContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                EarnMorePJCCard(totalEarnings: referralProvider.totalEarnings),
+                const EarnMorePJCCard(totalEarnings: 0),
                 const SizedBox(height: 32),
                 ShareInviteLinkCard(
                   onShare: () async {
@@ -290,7 +265,7 @@ class _MyReferralsContentState extends State<_MyReferralsContent> {
                 ),
                 const SizedBox(height: 24),
                 Column(
-                  children: referrals
+                  children: referralProvider.referrals
                       .map((referral) => Padding(
                             padding: const EdgeInsets.only(bottom: 10),
                             child: ReferralTile(

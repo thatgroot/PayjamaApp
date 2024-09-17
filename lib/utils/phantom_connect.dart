@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:pinenacl/digests.dart';
 import 'package:pinenacl/x25519.dart';
-import 'package:pinenacl/tweetnacl.dart';
 import 'package:pyjama_runner/utils/hive.dart';
 import 'package:solana/base58.dart';
 import 'package:solana/solana.dart';

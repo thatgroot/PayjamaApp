@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:developer' as dev;
 import 'package:crypto/crypto.dart';
 
 class ReferralTree {
@@ -62,7 +63,7 @@ class ReferralTree {
   }
 
   Future<String> addReferral(String by, String myRefCode) async {
-    print("by $by");
+    dev.log("by $by");
 
     var docSnapshot = await _firestore.collection('users').doc(by).get();
     if (!docSnapshot.exists) {
@@ -115,7 +116,7 @@ class ReferralTree {
 
         for (var doc in invitedUsersSnapshot.docs) {
           String name = doc.get("characterName");
-          print("name is $name");
+          dev.log("name is $name");
           referrals.add({
             "id": doc.id,
             'userId': currentUser,
@@ -133,9 +134,9 @@ class ReferralTree {
 
   Future<void> printReferrals(String user, int maxDepth) async {
     List<Map<String, dynamic>> referrals = await getReferrals(user, maxDepth);
-    print("Referrals for $user up to depth $maxDepth:");
+    dev.log("Referrals for $user up to depth $maxDepth:");
     for (var referral in referrals) {
-      print("User: ${referral['userId']}, Level: ${referral['level']}");
+      dev.log("User: ${referral['userId']}, Level: ${referral['level']}");
     }
   }
 }
