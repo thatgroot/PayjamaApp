@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:pyjama_runner/providers/phantom.dart';
+import 'package:pyjama_runner/screens/character_display_screen.dart';
 import 'package:pyjama_runner/screens/name_input_screen.dart';
+import 'package:pyjama_runner/services/context_utility.dart';
+import 'package:pyjama_runner/services/firebase.dart';
+import 'package:pyjama_runner/utils/navigation.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -11,6 +17,16 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   void initState() {
+    final walletProvider =
+        Provider.of<PhantomWalletProvider>(ContextUtility.context!);
+    final FirestoreService firestoreService = FirestoreService();
+
+    firestoreService.getDocument("info", walletProvider.publicKey!).then((doc) {
+      print("exists ${doc.data()}");
+      if (doc.exists) {
+        to(ContextUtility.context!, const CharacterDisplayScreen());
+      }
+    });
     super.initState();
   }
 

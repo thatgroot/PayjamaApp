@@ -1,5 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:pyjama_runner/providers/phantom.dart';
 import 'package:pyjama_runner/screens/loading_screen.dart';
+import 'package:pyjama_runner/services/context_utility.dart';
+import 'package:pyjama_runner/services/firebase.dart';
+import 'package:pyjama_runner/services/referral_tree.dart';
 import 'package:pyjama_runner/utils/hive.dart';
 
 class NameInputScreen extends StatefulWidget {
@@ -11,22 +18,47 @@ class NameInputScreen extends StatefulWidget {
 
 class _NameInputScreenState extends State<NameInputScreen> {
   String name = ''; // State variable to store the name
-
+  String code = '';
   @override
   void initState() {
     super.initState();
   }
 
-  void _navigateToNameScreen() {
+  void _navigateToLoadingScreen(String pubkey) async {
     saveData("name", name);
+    final FirestoreService firestoreService = FirestoreService();
+    log("pubkey is $pubkey");
+
+    ReferralTree tree = ReferralTree();
+
+    String id = await tree.registerUser(name);
+
+    if (code.length > 1) {
+      await tree.addReferral(code, id);
+    }
+    var doc = await firestoreService.getDocument("info", pubkey);
+    if (!doc.exists) {
+      firestoreService.setDocument(
+        "info",
+        pubkey,
+        {
+          "name": name,
+          "pubkey": pubkey,
+          "id": id,
+        },
+      );
+    }
+
     Navigator.pushReplacement(
-      context,
+      ContextUtility.context!,
       MaterialPageRoute(builder: (context) => const Loadingscreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final walletProvider = Provider.of<PhantomWalletProvider>(context);
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -133,6 +165,51 @@ class _NameInputScreenState extends State<NameInputScreen> {
                         });
                       },
                     ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: 325,
+                      child: TextField(
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0.0,
+                          ), // Adjust padding as needed
+                          filled: true,
+
+                          fillColor: Colors.transparent, // No background color
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(4),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFFED127),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(4),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFFED127),
+                              width: 1,
+                            ),
+                          ),
+                          hintText: 'Referral Code (optional)',
+                          hintStyle: const TextStyle(
+                            color: Color(0xFF99A0A8),
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w400,
+                            height: 1.2, // Adjusted to fit better in TextField
+                          ),
+                        ),
+                        textAlign: TextAlign.center,
+                        onChanged: (text) {
+                          saveData("referral_code", text);
+                          setState(() {
+                            code =
+                                text; // Update the name state when text changes
+                          });
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -141,7 +218,7 @@ class _NameInputScreenState extends State<NameInputScreen> {
               ),
               TextButton(
                 onPressed: () {
-                  _navigateToNameScreen();
+                  _navigateToLoadingScreen(walletProvider.publicKey!);
                 },
                 child: Container(
                   width: 264,

@@ -5,7 +5,7 @@ import 'package:pyjama_runner/services/referral.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ReferralProvider extends ChangeNotifier {
-  final ReferralSystem _referralSystem = ReferralSystem();
+  final ReferralSystem referralSystem = ReferralSystem();
   List<Map<String, dynamic>> _referrals = [];
   String _referralCode = '';
   int _totalEarnings = 0;
@@ -15,7 +15,9 @@ class ReferralProvider extends ChangeNotifier {
   int get totalEarnings => _totalEarnings;
 
   Future<void> loadReferralData(String userId) async {
-    var userData = await _referralSystem.getUserReferralData(userId);
+    // var userData = await referralSystem.getUserReferralData(userId);
+    var userData = {};
+
     if (userData['referralCode'] == null) {
       return;
     }
@@ -33,7 +35,7 @@ class ReferralProvider extends ChangeNotifier {
 }
 
 class ReferralJoinProvider extends ChangeNotifier {
-  final ReferralSystem _referralSystem = ReferralSystem();
+  final ReferralSystem referralSystem = ReferralSystem();
   bool _isLoading = false;
   String _errorMessage = '';
 
@@ -46,7 +48,7 @@ class ReferralJoinProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _referralSystem.registerUser(userId, referralCode);
+      await referralSystem.registerUser(userId, referralCode);
       _isLoading = false;
       notifyListeners();
       return true;

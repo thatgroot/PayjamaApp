@@ -1,8 +1,12 @@
+import 'dart:developer';
+
 import 'package:hive/hive.dart';
 
 void saveData(String key, dynamic value) {
-  var box = Hive.box('gameBox');
-  box.put(key, value);
+  Hive.openBox("gameBox").then((box) {
+    log("Saving $key: $value");
+    box.put(key, value);
+  });
 }
 
 Future<dynamic> getData(String key) async {

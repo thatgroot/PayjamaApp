@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:pinenacl/digests.dart';
 import 'package:pinenacl/x25519.dart';
+import 'package:pinenacl/tweetnacl.dart';
+import 'package:pyjama_runner/utils/hive.dart';
 import 'package:solana/base58.dart';
 import 'package:solana/solana.dart';
 
@@ -15,7 +18,7 @@ class PhantomConnect {
   final String appUrl;
   final String deepLink;
 
-  late final PrivateKey _dAppSecretKey;
+  static late PrivateKey dAppSecretKey;
   late final PublicKey dAppPublicKey;
 
   String? _sessionToken;
@@ -23,8 +26,10 @@ class PhantomConnect {
   Box? _sharedSecret;
 
   PhantomConnect({required this.appUrl, required this.deepLink}) {
-    _dAppSecretKey = PrivateKey.generate();
-    dAppPublicKey = _dAppSecretKey.publicKey;
+    dAppSecretKey = PrivateKey.generate();
+    dAppPublicKey = dAppSecretKey.publicKey;
+    saveData("dAppSecretKey", dAppSecretKey.toUint8List());
+    log("dAppSecretKey ${dAppSecretKey.toUint8List()} -> ${dAppSecretKey.publicKey}");
   }
 
   Uri generateConnectUri({required String cluster, required String redirect}) {
@@ -189,7 +194,7 @@ class PhantomConnect {
 
   void _createSharedSecret(Uint8List remotePubKey) {
     _sharedSecret = Box(
-      myPrivateKey: _dAppSecretKey,
+      myPrivateKey: dAppSecretKey,
       theirPublicKey: PublicKey(remotePubKey),
     );
   }

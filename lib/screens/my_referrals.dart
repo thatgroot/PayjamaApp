@@ -1,132 +1,87 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pyjama_runner/providers/phantom.dart';
 import 'package:pyjama_runner/screens/character_display_screen.dart';
 import 'package:pyjama_runner/providers/providers.dart';
+import 'package:pyjama_runner/services/firebase.dart';
+import 'package:pyjama_runner/services/referral_tree.dart';
 import 'package:pyjama_runner/utils/navigation.dart';
 import 'package:pyjama_runner/widgets/app/Wrapper.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
-class MyReferrals extends StatelessWidget {
+class MyReferrals extends StatefulWidget {
   final String userId;
 
   const MyReferrals({super.key, required this.userId});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) =>
-          ReferralProvider()..loadReferralData("rashidiqbal" ?? userId),
-      child: Wrapper(
-        title: "My Referrals",
-        onBack: () => to(context, const CharacterDisplayScreen()),
-        child: const _MyReferralsContent(),
-      ),
-    );
-  }
+  State<MyReferrals> createState() => _MyReferralsState();
 }
 
-class _MyReferralsContent extends StatelessWidget {
-  const _MyReferralsContent();
+class _MyReferralsState extends State<MyReferrals> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<String> _fetchReferralCode() async {
+    final walletProvider =
+        Provider.of<PhantomWalletProvider>(context, listen: false);
+    final FirestoreService firestoreService = FirestoreService();
+
+    try {
+      final doc =
+          await firestoreService.getDocument("info", walletProvider.publicKey!);
+      return doc.get('id') as String;
+    } catch (error) {
+      print("Error fetching document: $error");
+      return "";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ReferralProvider>(
-      builder: (context, referralProvider, child) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 36),
-          child: ListView(
-            children: [
-              EarnMorePJCCard(totalEarnings: referralProvider.totalEarnings),
-              const SizedBox(height: 32),
-              ShareInviteLinkCard(
-                referralCode: referralProvider.referralCode,
-                onShare: referralProvider.shareReferralCode,
+    return FutureBuilder<String>(
+      future: _fetchReferralCode(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          final referralCode = snapshot.data ?? "";
+          return ChangeNotifierProvider(
+            create: (_) => ReferralProvider()..loadReferralData(widget.userId),
+            child: Wrapper(
+              title: "My Referrals",
+              onBack: () => to(context, const CharacterDisplayScreen()),
+              child: SingleChildScrollView(
+                child:
+                    Container(child: _MyReferralsContent(code: referralCode)),
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'My Referrals',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                  height: 0,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Column(
-                children: referralProvider.referrals
-                    .map((referral) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: ReferralTile(
-                            name: referral['name'] ?? 'Unknown',
-                            level: 'LV ${referral['level'] ?? 1}',
-                            avatar: referral['avatar'] ??
-                                "assets/icons/navigation/profile.png",
-                            badge: "assets/images/pyjama/pyjama.png",
-                          ),
-                        ))
-                    .toList(),
-              ),
-            ],
-          ),
-        );
+            ),
+          );
+        }
       },
     );
   }
 }
 
-class EarnMorePJCCard extends StatelessWidget {
-  final int totalEarnings;
-
-  const EarnMorePJCCard({super.key, required this.totalEarnings});
-
-  @override
-  Widget build(BuildContext context) {
-    const double containerWidth = 177;
-    const double imageHeight = 177;
-    const Color textColor = Colors.white;
-
-    const textStyle = TextStyle(
-      color: textColor,
-      fontSize: 24,
-      fontFamily: 'Roboto',
-      fontWeight: FontWeight.w500,
-      height: 1,
-    );
-
-    return SizedBox(
-      width: containerWidth,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Image.asset("assets/images/pyjama/pyjama.png", height: imageHeight),
-          Text(
-            'Earned $totalEarnings PJC',
-            style: textStyle,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class ShareInviteLinkCard extends StatelessWidget {
-  final String referralCode;
   final VoidCallback onShare;
+  final String code;
 
   const ShareInviteLinkCard({
-    super.key,
-    required this.referralCode,
+    Key? key,
     required this.onShare,
-  });
+    required this.code,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // ... (keep the existing styling constants)
     const double containerWidth = 352;
     const double containerHeight = 369;
     const double imageWidth = 279;
@@ -171,7 +126,7 @@ class ShareInviteLinkCard extends StatelessWidget {
             decoration: BoxDecoration(
               image: const DecorationImage(
                 image: AssetImage("assets/images/pyjama/share-banner.png"),
-                fit: BoxFit.cover,
+                fit: BoxFit.fitHeight,
               ),
               borderRadius: BorderRadius.circular(borderRadius),
             ),
@@ -179,10 +134,11 @@ class ShareInviteLinkCard extends StatelessWidget {
           const SizedBox(height: 16),
           GestureDetector(
             onTap: () {
-              Clipboard.setData(ClipboardData(text: referralCode));
+              Clipboard.setData(ClipboardData(text: code));
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                    content: Text('Referral code copied to clipboard')),
+                  content: Text('Referral code copied to clipboard'),
+                ),
               );
             },
             child: Container(
@@ -195,7 +151,7 @@ class ShareInviteLinkCard extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  referralCode,
+                  "code: $code",
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
@@ -221,8 +177,11 @@ class ShareInviteLinkCard extends StatelessWidget {
                     border: Border.all(width: 2, color: buttonBorderColor),
                     borderRadius: BorderRadius.circular(buttonBorderRadius),
                   ),
-                  child: const Center(
-                    child: Text(
+                  child: TextButton(
+                    onPressed: () {
+                      // Implement refer functionality
+                    },
+                    child: const Text(
                       'Refer',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -263,6 +222,126 @@ class ShareInviteLinkCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MyReferralsContent extends StatefulWidget {
+  final String code;
+  const _MyReferralsContent({required this.code});
+
+  @override
+  State<_MyReferralsContent> createState() => _MyReferralsContentState();
+}
+
+class _MyReferralsContentState extends State<_MyReferralsContent> {
+  List<Map<String, dynamic>> referrals = [];
+
+  @override
+  void initState() {
+    _loadReferrals();
+    super.initState();
+  }
+
+  void _loadReferrals() async {
+    ReferralTree tree = ReferralTree();
+    List<Map<String, dynamic>> loadedReferrals =
+        await tree.getReferrals(widget.code, 5);
+    if (mounted) {
+      setState(() {
+        log(loadedReferrals.toString());
+        referrals = loadedReferrals;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ReferralProvider>(
+      builder: (context, referralProvider, child) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 36),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                EarnMorePJCCard(totalEarnings: referralProvider.totalEarnings),
+                const SizedBox(height: 32),
+                ShareInviteLinkCard(
+                  onShare: () async {
+                    await Share.share(
+                        'Join Pyjama Runner using my referral code: ${widget.code}');
+                  },
+                  code: widget.code,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'My Referrals',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w500,
+                    height: 0,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Column(
+                  children: referrals
+                      .map((referral) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: ReferralTile(
+                              name: referral['name'] ?? "unknown",
+                              level: 'Depth ${referral['level'] ?? 1}',
+                              avatar: "assets/icons/navigation/profile.png",
+                              badge: "assets/images/pyjama/pyjama.png",
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class EarnMorePJCCard extends StatelessWidget {
+  final int totalEarnings;
+
+  const EarnMorePJCCard({super.key, required this.totalEarnings});
+
+  @override
+  Widget build(BuildContext context) {
+    const double containerWidth = 177;
+    const double imageHeight = 177;
+    const Color textColor = Colors.white;
+
+    const textStyle = TextStyle(
+      color: textColor,
+      fontSize: 24,
+      fontFamily: 'Roboto',
+      fontWeight: FontWeight.w500,
+      height: 1,
+    );
+
+    return SizedBox(
+      width: containerWidth,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Image.asset("assets/images/pyjama/pyjama.png", height: imageHeight),
+          Text(
+            'Earned $totalEarnings PJC',
+            style: textStyle,
+            textAlign: TextAlign.center,
           ),
         ],
       ),

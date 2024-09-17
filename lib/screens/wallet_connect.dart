@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pyjama_runner/screens/welcome_screen.dart';
 import 'package:pyjama_runner/utils/phantom_connect.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -45,11 +46,10 @@ class _WalletConnectState extends State<WalletConnect> {
     //   path: "/ul/v1/connect",
     //   queryParameters: queryParameters,
     // );
-    Uri url = phantomConnect.generateConnectUri(
-        cluster: 'devnet', redirect: '/onConnect');
-
+    Uri uri = phantomConnect.generateConnectUri(
+        cluster: 'devnet', redirect: '/connected');
     launchUrl(
-      url,
+      uri,
       mode: LaunchMode.externalNonBrowserApplication,
     );
 
