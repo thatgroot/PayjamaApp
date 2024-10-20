@@ -1,11 +1,6 @@
 // to function
-import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-void to(context, widget) {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (context) => widget,
-    ),
-  );
+void to(context, String route) {
+  GoRouter.of(context).go(route);
 }

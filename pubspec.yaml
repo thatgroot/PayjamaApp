@@ -1,4 +1,4 @@
-name: pyjama_runner
+name: pyjamaapp
 description: a p2e game for pyjama token on solana
 
 publish_to: "none"
@@ -18,6 +18,9 @@ dependencies:
   flame_audio: 2.10.2
   flutter:
     sdk: flutter
+  flutter_bloc: ^8.1.6
+  freezed_annotation: ^2.4.4
+  go_router: ^14.3.0
   hive: 2.2.3
   path_provider: 2.1.3
   pinenacl: ^0.6.0
@@ -32,25 +35,33 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   hive_generator: 2.0.1
+  freezed: ^2.1.0+1
+  mews_pedantic: ^0.26.0
 
 flutter:
   uses-material-design: true
   assets:
     - assets/images/
-    - assets/images/parallax/
-    - assets/images/parallax/new/
-    - assets/images/AngryPig/
-    - assets/images/Bat/
-    - assets/images/Rino/
+    - assets/audio/
+    - assets/icons/
+    - assets/icons/profile/
+    - assets/icons/navigation/
+    - assets/images/app/
     - assets/images/pyjama/
+    - assets/images/brick_breaker/
+    - assets/images/fruit_ninja/
+    - assets/images/pyjama/parallax/
+    - assets/images/pyjama/parallax/new/
+    - assets/images/pyjama/AngryPig/
+    - assets/images/pyjama/Bat/
+    - assets/images/pyjama/Rino/
     - assets/images/pyjama/characters/
     - assets/images/pyjama/activities/
     - assets/images/pyjama/modes/
     - assets/images/pyjama/tasks/
-    - assets/icons/
-    - assets/icons/navigation/
-    - assets/icons/profile/
-    - assets/audio/
+    - assets/audio/brick_breaker/
+    - assets/audio/fruit_ninja/
+    - assets/audio/pyjama/
 
   fonts:
     - family: Audiowide

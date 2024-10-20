@@ -2,16 +2,17 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pyjama_runner/providers/phantom.dart';
-import 'package:pyjama_runner/screens/character_display_screen.dart';
-import 'package:pyjama_runner/screens/name_input_screen.dart';
-import 'package:pyjama_runner/screens/wallet_connect.dart';
-import 'package:pyjama_runner/services/context_utility.dart';
-import 'package:pyjama_runner/services/firebase.dart';
-import 'package:pyjama_runner/utils/navigation.dart';
+import 'package:pyjamaapp/providers/phantom.dart';
+import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/screens/name_input_screen.dart';
+import 'package:pyjamaapp/screens/wallet_screen.dart';
+import 'package:pyjamaapp/services/context_utility.dart';
+import 'package:pyjamaapp/services/firebase.dart';
+import 'package:pyjamaapp/utils/navigation.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
+  static String route = "/welcome";
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -31,7 +32,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
       if (walletProvider.publicKey == null) {
         if (mounted) {
-          to(ContextUtility.context!, const WalletConnect());
+          to(ContextUtility.context!, WalletScreen.route);
         }
         return;
       } else {
@@ -40,7 +41,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             .then((doc) {
           log("exists ${doc.data()}");
           if (doc.exists) {
-            to(ContextUtility.context!, const CharacterDisplayScreen());
+            to(ContextUtility.context!, CharacterDisplayScreen.route);
           }
         });
       }

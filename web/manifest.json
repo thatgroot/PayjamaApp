@@ -1,5 +1,5 @@
 {
-  "name": "pyjama_runner",
+  "name": "pyjamaapp",
   "short_name": "pj",
   "start_url": ".",
   "display": "standalone",

@@ -2,13 +2,13 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pyjama_runner/screens/character_display_screen.dart';
-import 'package:pyjama_runner/utils/navigation.dart';
+import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/utils/navigation.dart';
 
 import '/widgets/hud.dart';
-import '/game/dino_run.dart';
+import '../games/pyjama_game/game.dart';
 import '/models/player_data.dart';
-import '/game/audio_manager.dart';
+import '../games/pyjama_game/audio_manager.dart';
 
 // This represents the game over overlay,
 // displayed with dino runs out of lives.
@@ -17,7 +17,7 @@ class GameOverMenu extends StatelessWidget {
   static const id = 'GameOverMenu';
 
   // Reference to parent game.
-  final DinoRun game;
+  final PyjamaRunnerGame game;
 
   const GameOverMenu(this.game, {super.key});
 
@@ -80,7 +80,7 @@ class GameOverMenu extends StatelessWidget {
                         ),
                       ),
                       onPressed: () {
-                        to(context, const CharacterDisplayScreen());
+                        to(context, CharacterDisplayScreen.route);
                       },
                     ),
                   ],

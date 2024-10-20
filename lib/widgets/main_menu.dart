@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '/widgets/hud.dart';
-import '/game/dino_run.dart';
+import '../games/pyjama_game/game.dart';
 import '/widgets/settings_menu.dart';
 
 // This represents the main menu overlay.
@@ -12,7 +12,7 @@ class MainMenu extends StatelessWidget {
   static const id = 'MainMenu';
 
   // Reference to parent game.
-  final DinoRun game;
+  final PyjamaRunnerGame game;
 
   const MainMenu(this.game, {super.key});
 

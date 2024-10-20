@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:pyjama_runner/services/firebase.dart';
+import 'package:pyjamaapp/services/firebase.dart';
 
 class ReferralSystem {
   final FirestoreService _firestoreService = FirestoreService();

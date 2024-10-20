@@ -2,15 +2,16 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pyjama_runner/providers/phantom.dart';
-import 'package:pyjama_runner/screens/loading_screen.dart';
-import 'package:pyjama_runner/services/context_utility.dart';
-import 'package:pyjama_runner/services/firebase.dart';
-import 'package:pyjama_runner/services/referral_tree.dart';
-import 'package:pyjama_runner/utils/hive.dart';
+import 'package:pyjamaapp/providers/phantom.dart';
+import 'package:pyjamaapp/screens/loading_screen.dart';
+import 'package:pyjamaapp/services/context_utility.dart';
+import 'package:pyjamaapp/services/firebase.dart';
+import 'package:pyjamaapp/services/referral_tree.dart';
+import 'package:pyjamaapp/utils/hive.dart';
 
 class NameInputScreen extends StatefulWidget {
   const NameInputScreen({super.key});
+  static String route = "/name_screen";
 
   @override
   State<NameInputScreen> createState() => _NameInputScreenState();
@@ -51,7 +52,7 @@ class _NameInputScreenState extends State<NameInputScreen> {
 
     Navigator.pushReplacement(
       ContextUtility.context!,
-      MaterialPageRoute(builder: (context) => const Loadingscreen()),
+      MaterialPageRoute(builder: (context) => const LoadingScreen()),
     );
   }
 

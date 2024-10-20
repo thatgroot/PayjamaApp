@@ -1,11 +1,8 @@
 import 'dart:developer';
 
 import 'package:flutter/services.dart';
-import 'package:pyjama_runner/screens/character_display_screen.dart';
-import 'package:pyjama_runner/screens/welcome_screen.dart';
-import 'package:pyjama_runner/services/context_utility.dart';
-import 'package:pyjama_runner/utils/hive.dart';
-import 'package:pyjama_runner/utils/navigation.dart';
+import 'package:pyjamaapp/services/context_utility.dart';
+import 'package:pyjamaapp/utils/hive.dart';
 import 'package:app_links/app_links.dart';
 
 class LinkServices {
@@ -30,11 +27,12 @@ class LinkServices {
     if (ContextUtility.context == null) return; // Exit if the context is null
 
     getData("connected").then((connected) {
-      if (connected != null && connected) {
-        to(ContextUtility.context!, const CharacterDisplayScreen());
-      }
-      saveData("connected", true);
-      to(ContextUtility.context!, const WelcomeScreen());
+      log("link services :: connected $connected");
+      // if (connected != null && connected) {
+      //   to(ContextUtility.context!, const CharacterDisplayScreen());
+      // }
+      // saveData("connected", true);
+      // to(ContextUtility.context!, const WelcomeScreen());
     });
   }
 }

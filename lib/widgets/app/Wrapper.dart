@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 class Wrapper extends StatelessWidget {
-  const Wrapper({super.key, required this.child, this.onBack, this.title});
+  const Wrapper({
+    super.key,
+    required this.child,
+    this.onBack,
+    this.title,
+  });
   final String? title;
   final VoidCallback? onBack;
   final Widget child;
@@ -10,27 +15,36 @@ class Wrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF24243E), Color(0xFF302B63), Color(0xFF0F0C29)],
+        image: DecorationImage(
+          image: AssetImage(
+            "assets/images/app/background.png",
+          ),
         ),
       ),
       child: Scaffold(
+        appBar: onBack == null
+            ? AppBar(
+                toolbarHeight: 0.0,
+              )
+            : AppBar(
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: onBack,
+                ),
+                title: title == null
+                    ? Container()
+                    : Container(
+                        width: double.infinity,
+                        alignment: Alignment.center,
+                        child: Text(
+                          title!,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+              ),
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          scrolledUnderElevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: onBack,
-          ),
-          title: Text(
-            title ?? '',
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        ),
         body: child,
       ),
     );

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjama_runner/widgets/app/custom_progress_bar.dart';
+import 'package:pyjamaapp/widgets/app/custom_progress_bar.dart';
 
 class AnimatedProgressBar extends StatefulWidget {
   final void Function(double progress)? onProgressChanged;
