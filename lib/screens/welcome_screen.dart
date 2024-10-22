@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pyjamaapp/providers/phantom.dart';
+import 'package:pyjamaapp/providers/wallet.dart';
 import 'package:pyjamaapp/screens/pyjama/character_display.dart';
 import 'package:pyjamaapp/screens/name_input_screen.dart';
 import 'package:pyjamaapp/screens/wallet_screen.dart';
@@ -25,9 +25,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final walletProvider = Provider.of<PhantomWalletProvider>(
-          ContextUtility.context!,
-          listen: false);
+      final walletProvider =
+          Provider.of<WalletProvider>(ContextUtility.context!, listen: false);
       final FirestoreService firestoreService = FirestoreService();
 
       if (walletProvider.publicKey == null) {

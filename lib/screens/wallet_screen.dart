@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pyjamaapp/services/wallet_service.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -11,23 +10,10 @@ class WalletScreen extends StatefulWidget {
 }
 
 class _WalletScreenState extends State<WalletScreen> {
+  final WalletService _walletService = WalletService();
   @override
   void initState() {
     super.initState();
-  }
-
-  final WalletService phantomConnect = WalletService(
-    appUrl: "https://orionplus.io",
-    deepLink: "pyjamaapp://product?handleQuery=onConnect",
-  );
-
-  void openPhantom() {
-    Uri uri = phantomConnect.generateConnectUri(
-        cluster: SolanaCluster.devnet, redirect: '/connected');
-    launchUrl(
-      uri,
-      mode: LaunchMode.externalNonBrowserApplication,
-    );
   }
 
   @override
@@ -83,7 +69,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   const SizedBox(height: 24),
                   TextButton(
                     onPressed: () {
-                      openPhantom();
+                      _walletService.connect();
                     },
                     child: SizedBox(
                       width: 272,

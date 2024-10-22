@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pyjamaapp/providers/phantom.dart';
+import 'package:pyjamaapp/providers/wallet.dart';
 import 'package:pyjamaapp/screens/loading_screen.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/firebase.dart';
@@ -58,7 +58,7 @@ class _NameInputScreenState extends State<NameInputScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final walletProvider = Provider.of<PhantomWalletProvider>(context);
+    final walletProvider = Provider.of<WalletProvider>(context);
 
     return Scaffold(
       body: Container(

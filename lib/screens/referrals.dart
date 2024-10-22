@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pyjamaapp/providers/phantom.dart';
+import 'package:pyjamaapp/providers/wallet.dart';
 import 'package:pyjamaapp/screens/pyjama/character_display.dart';
 import 'package:pyjamaapp/providers/game.dart';
 import 'package:pyjamaapp/services/firebase.dart';
@@ -26,8 +26,7 @@ class _ReferralsState extends State<Referrals> {
   }
 
   Future<String> _fetchReferralCode() async {
-    final walletProvider =
-        Provider.of<PhantomWalletProvider>(context, listen: false);
+    final walletProvider = Provider.of<WalletProvider>(context, listen: false);
     final FirestoreService firestoreService = FirestoreService();
 
     try {

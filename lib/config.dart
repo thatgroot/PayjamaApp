@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pyjamaapp/screens/web3/buy_nfts.dart';
+import 'package:solana/solana.dart';
 
 import 'games/brick_breaker/brick_breaker.dart';
 import 'games/fruit_ninja/fruit_ninja.dart';
@@ -62,20 +63,48 @@ final goRouter = GoRouter(
 );
 
 class SolanaConfig {
+  static const String nftAddress =
+      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA0';
   static const String testnetRpcUrl = 'https://api.testnet.solana.com';
   static const String testnetWsUrl = 'wss://api.testnet.solana.com';
   static const String testnetCluster = 'testnet';
+  static const String devnetRpcUrl = 'https://api.devnet.solana.com';
+  static const String devnetWsUrl = 'wss://api.devnet.solana.com';
+  static const String devnetCluster = 'devnet';
   static const String mainnetRpcUrl = 'https://api.mainnet-beta.solana.com';
   static const String mainnetWsUrl = 'wss://api.mainnet-beta.solana.com';
   static const String mainnetCluster = 'mainnet-beta';
 }
 
+enum SolanaCluster { devnet, mainnet }
+
 class WalletConfig {
+  static SolanaClient client() {
+    String rpc = cluster == SolanaCluster.devnet
+        ? SolanaConfig.devnetRpcUrl
+        : SolanaConfig.mainnetRpcUrl;
+
+    String ws = cluster == SolanaCluster.devnet
+        ? SolanaConfig.devnetWsUrl
+        : SolanaConfig.mainnetWsUrl;
+
+    SolanaClient solanaClient = SolanaClient(
+      rpcUrl: Uri.parse(rpc),
+      websocketUrl: Uri.parse(ws),
+    );
+    return solanaClient;
+  }
+
   static const String scheme = "https";
   static const String host = "phantom.app";
+  static const SolanaCluster cluster = SolanaCluster.devnet;
+
+  static String appUrl = "https://orionplus.io";
+  static String connectDeepLink = "pyjamaapp://product?handleQuery=onConnect";
 
   // Paths
   static const String connect = '/ul/v1/connect';
+  static const String connected = '/connected';
   static const String signAndSendTransaction = '/ul/v1/signAndSendTransaction';
   static const String disconnect = '/ul/v1/disconnect';
   static const String signTransaction = '/ul/v1/signTransaction';

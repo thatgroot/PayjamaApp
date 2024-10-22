@@ -2,8 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'package:pyjamaapp/config.dart';
-import 'package:pyjamaapp/providers/phantom.dart';
+import 'package:pyjamaapp/providers/wallet.dart';
 import 'package:pyjamaapp/screens/games.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/wallet_service.dart';
@@ -16,8 +15,7 @@ import 'models/player_data.dart';
 import "package:app_links/app_links.dart";
 
 Future<void> handleDeepLink() async {
-  WalletService walletService =
-      WalletService(appUrl: appUrl, deepLink: deepLink);
+  WalletService walletService = WalletService();
   try {
     final appLinks = AppLinks(); // AppLinks is singleton
     appLinks.uriLinkStream.listen((uri) {
@@ -31,17 +29,17 @@ Future<void> handleDeepLink() async {
 }
 
 void _processDeepLink(WalletService walletService, Uri uri) {
-  if (walletService.createSession(uri.queryParameters)) {
+  if (walletService.createSession(uri)) {
     final publicKey = walletService.userPublicKey;
     log('User Public Key: $publicKey');
     saveData('publicKey', publicKey);
     saveData("connected", true);
-    // Update the PhantomWalletProvider
-    Provider.of<PhantomWalletProvider>(ContextUtility.context!, listen: false)
+    // Update the WalletProvider
+    Provider.of<WalletProvider>(ContextUtility.context!, listen: false)
         .setPublicKey(publicKey);
 
     // Fetch the balance
-    Provider.of<PhantomWalletProvider>(ContextUtility.context!, listen: false)
+    Provider.of<WalletProvider>(ContextUtility.context!, listen: false)
         .fetchBalance();
 
     getData("connected").then((connected) {
