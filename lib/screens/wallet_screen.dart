@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjamaapp/services/wallet_service.dart';
+import 'package:pyjamaapp/services/solana_wallet_service.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -10,9 +10,9 @@ class WalletScreen extends StatefulWidget {
 }
 
 class _WalletScreenState extends State<WalletScreen> {
-  final WalletService _walletService = WalletService();
   @override
   void initState() {
+    SolanaWalletService.init();
     super.initState();
   }
 
@@ -69,7 +69,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   const SizedBox(height: 24),
                   TextButton(
                     onPressed: () {
-                      _walletService.connect();
+                      SolanaWalletService.connect();
                     },
                     child: SizedBox(
                       width: 272,

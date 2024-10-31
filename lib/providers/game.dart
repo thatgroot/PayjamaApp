@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pyjamaapp/services/firebase.dart';
 import 'package:pyjamaapp/services/referral.dart';
 import 'package:pyjamaapp/services/referral_tree.dart';
-import 'package:pyjamaapp/utils/hive.dart';
+import 'package:pyjamaapp/services/hive.dart';
 import 'package:share_plus/share_plus.dart';
-
-enum GameType { pyjama, fruitNinja, brickBreaker }
 
 class ReferralProvider extends ChangeNotifier {
   final ReferralSystem referralSystem = ReferralSystem();
@@ -51,7 +49,7 @@ class ReferralJoinProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      saveData("name", name);
+      HiveService.setData(HiveKeys.name, name);
       final FirestoreService firestoreService = FirestoreService();
 
       ReferralTree tree = ReferralTree();
@@ -91,10 +89,10 @@ class ReferralJoinProvider extends ChangeNotifier {
 }
 
 class GlobalGameProvider with ChangeNotifier {
-  GameType _gameType = GameType.pyjama;
-  GameType get gameType => _gameType;
-  set setGameType(GameType type) {
-    _gameType = type;
+  GameNames _gameName = GameNames.runner;
+  GameNames get gameName => _gameName;
+  set setGameName(GameNames name) {
+    _gameName = name;
     notifyListeners();
   }
 }
@@ -117,11 +115,14 @@ abstract class GameProvider with ChangeNotifier {
   }
 
   // Method to update the level
-  void updateLevel(int value) {
+  void updateLevel(GameNames name, int value) {
     _level = value;
     _score = 0; // Reset score when level changes
-    saveData("level", value); // Save data to persistent storage (if required)
-    notifyListeners(); // Notify listeners about the level change
+    HiveService.setGameLevel(
+      name,
+      value,
+    );
+    notifyListeners();
   }
 
   // Method to reset the score
@@ -188,10 +189,10 @@ class BrickBreakerGameProvider with ChangeNotifier implements GameProvider {
 
   // Method to update the level
   @override
-  void updateLevel(int value) {
+  void updateLevel(GameNames name, int value) {
     _level = value;
     _score = 0;
-    saveData("level", value);
+    HiveService.setGameLevel(name, value);
     notifyListeners(); // Notify listeners about the level change
   }
 
@@ -276,10 +277,10 @@ class FruitNinjaGameProvider with ChangeNotifier implements GameProvider {
 
   // Method to update the level
   @override
-  void updateLevel(int value) {
+  void updateLevel(GameNames name, int value) {
     _level = value;
     _score = 0;
-    saveData("level", value);
+    HiveService.setGameLevel(name, value);
     notifyListeners(); // Notify listeners about the level change
   }
 

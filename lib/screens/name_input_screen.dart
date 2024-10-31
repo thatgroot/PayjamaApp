@@ -7,7 +7,7 @@ import 'package:pyjamaapp/screens/loading_screen.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/firebase.dart';
 import 'package:pyjamaapp/services/referral_tree.dart';
-import 'package:pyjamaapp/utils/hive.dart';
+import 'package:pyjamaapp/services/hive.dart';
 
 class NameInputScreen extends StatefulWidget {
   const NameInputScreen({super.key});
@@ -26,8 +26,9 @@ class _NameInputScreenState extends State<NameInputScreen> {
   }
 
   void _navigateToLoadingScreen(String pubkey) async {
-    saveData("name", name);
+    HiveService.setData(HiveKeys.name, name);
     final FirestoreService firestoreService = FirestoreService();
+
     log("pubkey is $pubkey");
 
     ReferralTree tree = ReferralTree();
@@ -203,7 +204,7 @@ class _NameInputScreenState extends State<NameInputScreen> {
                         ),
                         textAlign: TextAlign.center,
                         onChanged: (text) {
-                          saveData("referral_code", text);
+                          HiveService.setData(HiveKeys.referralCode, text);
                           setState(() {
                             code =
                                 text; // Update the name state when text changes

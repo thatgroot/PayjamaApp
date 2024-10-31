@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pyjamaapp/providers/game.dart';
+import 'package:pyjamaapp/services/hive.dart';
 
 class ActionItem {
   final IconData icon; // The type for icon is strictly IconData
@@ -22,9 +23,9 @@ class GameActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     var globalGameProvider = Provider.of<GlobalGameProvider>(context);
     GameProvider provider = Provider.of<BrickBreakerGameProvider>(context);
-    if (globalGameProvider.gameType == GameType.brickBreaker) {
+    if (globalGameProvider.gameName == GameNames.brickBreaker) {
       provider = Provider.of<BrickBreakerGameProvider>(context);
-    } else if (globalGameProvider.gameType == GameType.fruitNinja) {
+    } else if (globalGameProvider.gameName == GameNames.fruitNinja) {
       provider = Provider.of<FruitNinjaGameProvider>(context);
     }
 

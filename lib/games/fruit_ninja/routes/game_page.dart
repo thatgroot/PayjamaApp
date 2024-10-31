@@ -11,6 +11,7 @@ import 'package:pyjamaapp/games/fruit_ninja/config/app_config.dart';
 import 'package:pyjamaapp/games/fruit_ninja/game.dart';
 import 'package:pyjamaapp/providers/game.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
+import 'package:pyjamaapp/services/hive.dart';
 import 'dart:developer' as dev;
 import '../components/fruit_component.dart';
 
@@ -174,12 +175,12 @@ class GamePage extends Component
     gameProvider.update(updatedScore);
     if (updatedScore >= levelScoreThreshold) {
       dev.log(
-          "updated score is $updatedScore -> game type ${globalGameProvider.gameType}");
+          "updated score is $updatedScore -> game type ${globalGameProvider.gameName}");
       gameProvider.completePopover();
       Future.delayed(const Duration(seconds: 2), () {
         game.isPaused = true;
         game.resetGame();
-        gameProvider.updateLevel(level + 1);
+        gameProvider.updateLevel(GameNames.fruitNinja, level + 1);
       });
     }
   }

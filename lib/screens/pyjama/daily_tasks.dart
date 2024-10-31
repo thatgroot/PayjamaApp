@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pyjamaapp/games/pyjama_game/pyjama_runner.dart';
 import 'package:pyjamaapp/screens/pyjama/character_display.dart';
-import 'package:pyjamaapp/utils/hive.dart';
+import 'package:pyjamaapp/services/hive.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/Wrapper.dart';
 
@@ -18,7 +18,7 @@ class _DailyTasksState extends State<DailyTasks> {
 
   // Method to load the score from Hive
   void loadScore() {
-    getScore().then((score) {
+    HiveService.getCurrentGameScore().then((score) {
       setState(() {
         currentScore = score;
       });

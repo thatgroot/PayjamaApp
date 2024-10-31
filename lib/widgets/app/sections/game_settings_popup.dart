@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pyjamaapp/games/brick_breaker/audio_manager.dart';
 import 'package:pyjamaapp/providers/game.dart';
-import 'package:pyjamaapp/utils/hive.dart';
+import 'package:pyjamaapp/services/hive.dart';
 import 'package:pyjamaapp/widgets/app/sections/popover_container.dart';
 import 'package:pyjamaapp/widgets/app/toggle.dart';
 
@@ -47,15 +47,15 @@ class GameSettingsPopupState extends State<GameSettingsPopup> {
   @override
   void initState() {
     super.initState();
-    getData("sound").then((s) {
+    HiveService.getData(HiveKeys.sound).then((s) {
       setState(() {
         soundEnabled = s ?? true;
       });
     });
-    getData("bgm").then((s) {
+    HiveService.getData(HiveKeys.bgm).then((s) {
       if (s == null) {
         AudioManager.playBackgroundMusic();
-        saveData("bgm", true);
+        HiveService.setData(HiveKeys.bgm, true);
       } else {}
       setState(() {
         bgmEnabled = s ?? true;
@@ -68,9 +68,9 @@ class GameSettingsPopupState extends State<GameSettingsPopup> {
   Widget build(BuildContext context) {
     var globalGameProvider = Provider.of<GlobalGameProvider>(context);
     GameProvider gameProvider = Provider.of<BrickBreakerGameProvider>(context);
-    if (globalGameProvider.gameType == GameType.brickBreaker) {
+    if (globalGameProvider.gameName == GameNames.brickBreaker) {
       gameProvider = Provider.of<BrickBreakerGameProvider>(context);
-    } else if (globalGameProvider.gameType == GameType.fruitNinja) {
+    } else if (globalGameProvider.gameName == GameNames.fruitNinja) {
       gameProvider = Provider.of<FruitNinjaGameProvider>(context);
     }
 
@@ -170,7 +170,7 @@ class GameSettingsPopupState extends State<GameSettingsPopup> {
                                 onChanged: (v) {
                                   log("on: $v");
                                   bool value = gameProvider.sound;
-                                  saveData("sound", !value);
+                                  HiveService.setData(HiveKeys.sound, !value);
                                   AudioManager.sound = !value;
                                   gameProvider.toggleSound();
                                   setState(() {
@@ -187,7 +187,7 @@ class GameSettingsPopupState extends State<GameSettingsPopup> {
                                 onChanged: (v) {
                                   log("on: $v");
                                   bool value = gameProvider.bgm;
-                                  saveData("bgm", !value);
+                                  HiveService.setData(HiveKeys.bgm, !value);
                                   if (value) {
                                     AudioManager.stopBackgroundMusic();
                                   } else {

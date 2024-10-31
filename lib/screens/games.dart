@@ -7,7 +7,8 @@ import 'package:pyjamaapp/screens/brick_breaker/brick_breaker_screen.dart';
 import 'package:pyjamaapp/screens/pyjama/character_display.dart';
 import 'package:pyjamaapp/screens/pyjama/character_selection.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
-import 'package:pyjamaapp/utils/hive.dart';
+import 'package:pyjamaapp/services/solana_wallet_service.dart';
+import 'package:pyjamaapp/services/hive.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/Wrapper.dart';
 
@@ -21,10 +22,12 @@ class GamesScreen extends StatefulWidget {
 
 class _GamesScreenState extends State<GamesScreen> {
   int currentScore = 0;
+  var globalGameProvider =
+      Provider.of<GlobalGameProvider>(ContextUtility.context!);
 
   // Method to load the score from Hive
   void loadScore() {
-    getScore().then((score) {
+    HiveService.getCurrentGameScore().then((score) {
       setState(() {
         currentScore = score;
       });
@@ -36,9 +39,6 @@ class _GamesScreenState extends State<GamesScreen> {
     loadScore();
     super.initState();
   }
-
-  final globalGameProvider =
-      Provider.of<GlobalGameProvider>(ContextUtility.context!, listen: false);
 
   @override
   Widget build(BuildContext context) {
@@ -75,12 +75,37 @@ class _GamesScreenState extends State<GamesScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            TextButton(
+              onPressed: () async {
+                SolanaWalletService.init();
+                SolanaWalletService.connect();
+                // solanaWalletService.transfer(
+                //   "DRVYE7jgT3Kh2dsNXBz3X4rq2p5vPsJtugbd9Qod8VDP",
+                //   from: "DRVYE7jgT3Kh2dsNXBz3X4rq2p5vPsJtugbd9Qod8VDP",
+                //   to: "DRVYE7jgT3Kh2dsNXBz3X4rq2p5vPsJtugbd9Qod8VDP",
+                //   redirect: WalletConfig.toConnected,
+                // );
+                // await walletService.buyNftTransaction(
+                //   sellerPubkey: "DRVYE7jgT3Kh2dsNXBz3X4rq2p5vPsJtugbd9Qod8VDP",
+                //   receiverPubkey:
+                //       "DKqRWGgM5FWgfMEWF7M9dmziBgeLce3SKJq2AW3Kk372",
+                // );
+              },
+              child: SizedBox(
+                width: 272,
+                height: 39,
+                child: Image.asset(
+                  'assets/icons/wallet-connect-button.png',
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             _buildGameItem(
               'Pyjama',
               'Mini-game where you play a type of Ping Pong for 10 minutes. You need to keep a ball in the air with a paddle and destroy boxes.',
               'assets/images/pyjama/tasks/walk.gif',
               () {
-                globalGameProvider.setGameType = GameType.pyjama;
+                globalGameProvider.setGameName = GameNames.runner;
                 to(context, CharacterSelectionScreen.route);
               },
             ),
@@ -89,7 +114,8 @@ class _GamesScreenState extends State<GamesScreen> {
               'Mini-game where you play a Jump and Run for 10 minutes and collect coins.',
               'assets/images/pyjama/tasks/play.gif',
               () {
-                globalGameProvider.setGameType = GameType.brickBreaker;
+                globalGameProvider.setGameName = GameNames.brickBreaker;
+
                 to(context, BrickBreakerScreen.route);
               },
             ),
@@ -98,7 +124,7 @@ class _GamesScreenState extends State<GamesScreen> {
               'Mini-game where you cut various foods falling from the sky with a knife in the middle for 5 minutes.',
               'assets/images/pyjama/tasks/feed.gif',
               () {
-                globalGameProvider.setGameType = GameType.fruitNinja;
+                globalGameProvider.setGameName = GameNames.brickBreaker;
                 to(context, FruitNinja.route);
               },
             ),

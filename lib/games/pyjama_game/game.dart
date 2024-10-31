@@ -6,7 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/components.dart';
-import 'package:pyjamaapp/utils/hive.dart';
+import 'package:pyjamaapp/services/hive.dart';
 
 import 'dino_sprite_group.dart';
 import '/widgets/hud.dart';
@@ -131,8 +131,12 @@ class PyjamaRunnerGame extends FlameGame
     if (playerData.lives <= 0) {
       overlays.add(GameOverMenu.id);
       overlays.remove(Hud.id);
-      getScore().then((savedScore) {
-        saveScore(savedScore + playerData.currentScore);
+      HiveService.getCurrentGameScore().then((value) {
+        int score = value;
+        HiveService.setGameScore(
+          GameNames.runner,
+          score + playerData.highScore,
+        );
       });
       pauseEngine();
       AudioManager.instance.pauseBgm();

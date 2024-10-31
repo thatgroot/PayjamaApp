@@ -52,48 +52,48 @@ class _BrickBreakerState extends State<BrickBreakerScreen> {
       );
     }
 
-    void showGamePauseOverlay() {
-      _popoverManager.showOverlay(
-        context,
-        GameSettingsPopup(
-          gameInfo: true,
-          label: "Pause",
-          onExit: _popoverManager.removeOverlay,
-          actions: [
-            SettingActionItem(
-              buttonImage: Image.asset("assets/images/app/continue.png"),
-              action: _popoverManager.removeOverlay,
-            ),
-            SettingActionItem(
-              buttonImage: Image.asset("assets/images/app/exit.png"),
-              action: _popoverManager.removeOverlay,
-            ),
-          ],
-        ),
-      );
-    }
+    // void showGamePauseOverlay() {
+    //   _popoverManager.showOverlay(
+    //     context,
+    //     GameSettingsPopup(
+    //       gameInfo: true,
+    //       label: "Pause",
+    //       onExit: _popoverManager.removeOverlay,
+    //       actions: [
+    //         SettingActionItem(
+    //           buttonImage: Image.asset("assets/images/app/continue.png"),
+    //           action: _popoverManager.removeOverlay,
+    //         ),
+    //         SettingActionItem(
+    //           buttonImage: Image.asset("assets/images/app/exit.png"),
+    //           action: _popoverManager.removeOverlay,
+    //         ),
+    //       ],
+    //     ),
+    //   );
+    // }
 
-    void showGameCompletedOverlay() {
-      _popoverManager.showOverlay(
-        context,
-        GameSettingsPopup(
-          gameCompleted: true,
-          gameInfo: true,
-          label: "Pause",
-          onExit: _popoverManager.removeOverlay,
-          actions: [
-            SettingActionItem(
-              buttonImage: Image.asset("assets/images/app/next.png"),
-              action: _popoverManager.removeOverlay,
-            ),
-            SettingActionItem(
-              buttonImage: Image.asset("assets/images/app/exit.png"),
-              action: _popoverManager.removeOverlay,
-            ),
-          ],
-        ),
-      );
-    }
+    // void showGameCompletedOverlay() {
+    //   _popoverManager.showOverlay(
+    //     context,
+    //     GameSettingsPopup(
+    //       gameCompleted: true,
+    //       gameInfo: true,
+    //       label: "Pause",
+    //       onExit: _popoverManager.removeOverlay,
+    //       actions: [
+    //         SettingActionItem(
+    //           buttonImage: Image.asset("assets/images/app/next.png"),
+    //           action: _popoverManager.removeOverlay,
+    //         ),
+    //         SettingActionItem(
+    //           buttonImage: Image.asset("assets/images/app/exit.png"),
+    //           action: _popoverManager.removeOverlay,
+    //         ),
+    //       ],
+    //     ),
+    //   );
+    // }
 
     return Wrapper(
       child: Padding(

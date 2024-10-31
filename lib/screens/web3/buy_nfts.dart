@@ -238,7 +238,12 @@ class BuyNfts extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 13),
-                Center(
+                GestureDetector(
+                  onTap: () async {
+                    // WalletService walletService = WalletService();
+                    // String pubkey =
+                    //     "${await HiveService.getData(HiveKeys.publicKey)}";
+                  },
                   child: Container(
                     width: 129,
                     height: 40,

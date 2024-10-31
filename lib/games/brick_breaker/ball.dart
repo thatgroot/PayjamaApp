@@ -1,6 +1,6 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:pyjamaapp/utils/hive.dart';
+import 'package:pyjamaapp/services/hive.dart';
 import 'paddle.dart';
 import 'brick.dart';
 import 'audio_manager.dart';
@@ -64,7 +64,7 @@ class Ball extends SpriteComponent with HasGameRef, CollisionCallbacks {
   // Launch the ball
   void launchBall() {
     if (!isLaunched) {
-      getData('level').then((level) {
+      HiveService.getGameLevel(GameNames.brickBreaker).then((level) {
         int currentLevel = level ?? 1;
         velocity = Vector2(
           150 + (150 * currentLevel * 0.15),

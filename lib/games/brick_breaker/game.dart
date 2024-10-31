@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:pyjamaapp/providers/game.dart';
 import 'package:pyjamaapp/screens/games.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
+import 'package:pyjamaapp/services/hive.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/sections/game_settings_popup.dart';
 import 'paddle.dart';
@@ -181,7 +182,7 @@ class BrickBreakerGame extends FlameGame
     final gameProvider = Provider.of<BrickBreakerGameProvider>(
         ContextUtility.context!,
         listen: false);
-    gameProvider.updateLevel(level);
+    gameProvider.updateLevel(GameNames.brickBreaker, level);
     bricks.clear();
     removeAll(children);
     onLoad();
