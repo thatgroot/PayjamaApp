@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:pyjamaapp/games/brick_breaker/brick_breaker.dart';
+import 'package:pyjamaapp/games/fruit_ninja/fruit_ninja.dart';
 import 'package:pyjamaapp/games/pyjama_game/pyjama_runner.dart';
 import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/hive.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/Wrapper.dart';
@@ -14,29 +17,13 @@ class DailyTasks extends StatefulWidget {
 }
 
 class _DailyTasksState extends State<DailyTasks> {
-  int currentScore = 0;
-
-  // Method to load the score from Hive
-  void loadScore() {
-    HiveService.getCurrentGameScore().then((score) {
-      setState(() {
-        currentScore = score;
-      });
-    });
-  }
-
   @override
   void initState() {
-    loadScore();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    void toGame() {
-      to(context, PyjamaRunner.route);
-    }
-
     return Wrapper(
       title: "Daily Tasks",
       onBack: () {
@@ -74,29 +61,29 @@ class _DailyTasksState extends State<DailyTasks> {
               'Playing',
               'Mini-game where you play a type of Ping Pong for 10 minutes. You need to keep a ball in the air with a paddle and destroy boxes.',
               'assets/images/pyjama/tasks/play.gif',
-              currentScore,
-              toGame,
+              GameNames.brickBreaker,
+              BrickBreaker.route,
             ),
             _buildTaskItem(
               'Walking',
               'Mini-game where you play a Jump and Run for 10 minutes and collect coins.',
               'assets/images/pyjama/tasks/walk.gif',
-              currentScore,
-              toGame,
+              GameNames.runner,
+              PyjamaRunner.route,
             ),
             _buildTaskItem(
               'Feeding',
               'Mini-game where you cut various foods falling from the sky with a knife in the middle for 5 minutes.',
               'assets/images/pyjama/tasks/feed.gif',
-              currentScore,
-              toGame,
+              GameNames.fruitNinja,
+              FruitNinja.route,
             ),
             _buildTaskItem(
               'Cleaning',
               'Mini-game where you swipe the screen for 4 minutes to clean your character.',
               'assets/images/pyjama/tasks/clean.gif',
-              currentScore,
-              toGame,
+              GameNames.runner,
+              PyjamaRunner.route,
             ),
           ],
         ),
@@ -104,10 +91,13 @@ class _DailyTasksState extends State<DailyTasks> {
     );
   }
 
-  Widget _buildTaskItem(String title, String description, String image,
-      int score, void Function()? onPressed) {
-    // score state
-
+  Widget _buildTaskItem(
+    String title,
+    String description,
+    String image,
+    GameNames game,
+    String gameRoute,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.all(16),
@@ -138,7 +128,9 @@ class _DailyTasksState extends State<DailyTasks> {
                       ),
                     ),
                     TextButton(
-                      onPressed: onPressed,
+                      onPressed: () {
+                        to(ContextUtility.context!, gameRoute);
+                      },
                       style: ButtonStyle(
                         padding: WidgetStateProperty.all(
                           const EdgeInsets.symmetric(
@@ -161,14 +153,18 @@ class _DailyTasksState extends State<DailyTasks> {
                             height: 26,
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            score.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          FutureBuilder(
+                              future: HiveService.getGameScore(game),
+                              builder: (context, snapshot) {
+                                return Text(
+                                  "${snapshot.data ?? 0}",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              }),
                         ],
                       ),
                     )

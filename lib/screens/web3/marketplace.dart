@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/services/solana_wallet_service.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/Wrapper.dart';
 
-class BuyNfts extends StatelessWidget {
-  const BuyNfts({super.key});
+class MarketPlace extends StatelessWidget {
+  const MarketPlace({super.key});
   static String route = "/buy_nfts";
   @override
   Widget build(BuildContext context) {
@@ -172,7 +173,7 @@ class BuyNfts extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -240,9 +241,8 @@ class BuyNfts extends StatelessWidget {
                 const SizedBox(height: 13),
                 GestureDetector(
                   onTap: () async {
-                    // WalletService walletService = WalletService();
-                    // String pubkey =
-                    //     "${await HiveService.getData(HiveKeys.publicKey)}";
+                    SolanaWalletService walletService = SolanaWalletService();
+                    await walletService.mintFn();
                   },
                   child: Container(
                     width: 129,

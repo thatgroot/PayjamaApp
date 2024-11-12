@@ -3,15 +3,14 @@ import 'package:pyjamaapp/screens/pyjama/character_display.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/wrapper.dart';
 
-class CharacterSelectionScreen extends StatefulWidget {
-  const CharacterSelectionScreen({super.key});
-  static String route = "/character_selection";
+class PyjamaAppScreen extends StatefulWidget {
+  const PyjamaAppScreen({super.key});
+  static String route = "/app_screen";
   @override
-  State<CharacterSelectionScreen> createState() =>
-      _CharacterSelectionScreenState();
+  State<PyjamaAppScreen> createState() => _PyjamaAppScreenState();
 }
 
-class _CharacterSelectionScreenState extends State<CharacterSelectionScreen> {
+class _PyjamaAppScreenState extends State<PyjamaAppScreen> {
   @override
   void initState() {
     super.initState();

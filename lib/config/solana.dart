@@ -5,8 +5,162 @@ enum SolanaCluster { devnet, mainnet }
 class SolanaConfig {
   static const SolanaCluster cluster = SolanaCluster.devnet;
 
-  static const String mintAddress =
-      '9M2aFRip6H3vL6fLeaagoHXQ2NnRBs6k4JDwYgSkwB6k';
+  static final Ed25519HDKeyPairData mintAuthority = Ed25519HDKeyPairData(
+    [
+      151,
+      149,
+      147,
+      187,
+      241,
+      213,
+      24,
+      128,
+      81,
+      85,
+      21,
+      172,
+      162,
+      213,
+      99,
+      178,
+      206,
+      69,
+      65,
+      124,
+      57,
+      221,
+      167,
+      113,
+      219,
+      84,
+      187,
+      102,
+      244,
+      106,
+      21,
+      55,
+      246,
+      244,
+      202,
+      225,
+      103,
+      210,
+      90,
+      164,
+      245,
+      42,
+      147,
+      22,
+      4,
+      20,
+      209,
+      4,
+      113,
+      191,
+      75,
+      51,
+      138,
+      213,
+      53,
+      126,
+      244,
+      190,
+      110,
+      244,
+      41,
+      59,
+      87,
+      233
+    ],
+    publicKey: Ed25519HDPublicKey.fromBase58(
+      "DRVYE7jgT3Kh2dsNXBz3X4rq2p5vPsJtugbd9Qod8VDP",
+    ),
+  );
+
+  static Future<Ed25519HDKeyPair> getAuthorityPk() async {
+    return await Ed25519HDKeyPair.fromPrivateKeyBytes(privateKey: [
+      151,
+      149,
+      147,
+      187,
+      241,
+      213,
+      24,
+      128,
+      81,
+      85,
+      21,
+      172,
+      162,
+      213,
+      99,
+      178,
+      206,
+      69,
+      65,
+      124,
+      57,
+      221,
+      167,
+      113,
+      219,
+      84,
+      187,
+      102,
+      244,
+      106,
+      21,
+      55,
+      246,
+      244,
+      202,
+      225,
+      103,
+      210,
+      90,
+      164,
+      245,
+      42,
+      147,
+      22,
+      4,
+      20,
+      209,
+      4,
+      113,
+      191,
+      75,
+      51,
+      138,
+      213,
+      53,
+      126,
+      244,
+      190,
+      110,
+      244,
+      41,
+      59,
+      87,
+      233
+    ]);
+  }
+
+  static final Ed25519HDPublicKey mintAddress = Ed25519HDPublicKey.fromBase58(
+    "5yKJNHyND6xNED6UmQ9MgK3HgNcjtuPXyiqCimndzvDU",
+  );
+
+  // SPL Associated Token Account Program ID
+  static final Ed25519HDPublicKey associatedTokenProgramId =
+      Ed25519HDPublicKey.fromBase58(
+    'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+  );
+
+  // SPL Token Program ID
+  static final Ed25519HDPublicKey tokenProgramId =
+      Ed25519HDPublicKey.fromBase58(
+    'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  );
 
   static const String testnetRpcUrl = 'https://api.testnet.solana.com';
   static const String testnetWsUrl = 'wss://api.testnet.solana.com';

@@ -5,6 +5,7 @@ import 'package:flame/events.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_audio/flame_audio.dart'; // Import flame_audio package
 import 'package:provider/provider.dart';
+import 'package:pyjamaapp/games/fruit_ninja/audio.dart';
 import 'package:pyjamaapp/games/fruit_ninja/components/back_button.dart';
 import 'package:pyjamaapp/games/fruit_ninja/components/pause_button.dart';
 import 'package:pyjamaapp/games/fruit_ninja/config/app_config.dart';
@@ -12,7 +13,6 @@ import 'package:pyjamaapp/games/fruit_ninja/game.dart';
 import 'package:pyjamaapp/providers/game.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/hive.dart';
-import 'dart:developer' as dev;
 import '../components/fruit_component.dart';
 
 class GamePage extends Component
@@ -172,16 +172,19 @@ class GamePage extends Component
 
     int levelScoreThreshold =
         level == 1 ? baseLevelScore : baseLevelScore + scoreIncrement;
+
     gameProvider.update(updatedScore);
+
     if (updatedScore >= levelScoreThreshold) {
-      dev.log(
-          "updated score is $updatedScore -> game type ${globalGameProvider.gameName}");
-      gameProvider.completePopover();
-      Future.delayed(const Duration(seconds: 2), () {
-        game.isPaused = true;
-        game.resetGame();
-        gameProvider.updateLevel(GameNames.fruitNinja, level + 1);
-      });
+      HiveService.saveCurrentGameScore(updatedScore);
+      AudioManager.stopBackgroundMusic();
+      gameProvider.updateLevel(
+        name: GameNames.fruitNinja,
+        currentLevel: level + 1,
+        oldLevel: level,
+        oldScore: updatedScore,
+      );
+      game.showGameCompletedOverlay();
     }
   }
 
@@ -189,6 +192,8 @@ class GamePage extends Component
     mistakeCount++;
     _mistakeTextComponent?.text = 'Mistake: $mistakeCount';
     if (mistakeCount >= 10) {
+      HiveService.saveCurrentGameScore(gameProvider.score);
+
       game.resetGame();
       gameOver();
     }

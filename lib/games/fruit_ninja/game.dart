@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pyjamaapp/games/fruit_ninja/config/app_config.dart';
 import 'package:pyjamaapp/games/fruit_ninja/models/fruit_model.dart';
@@ -10,13 +11,16 @@ import 'package:pyjamaapp/games/fruit_ninja/routes/game_over_page.dart';
 import 'package:pyjamaapp/games/fruit_ninja/routes/game_page.dart';
 import 'package:pyjamaapp/games/fruit_ninja/routes/home_page.dart';
 import 'package:pyjamaapp/providers/game.dart';
+import 'package:pyjamaapp/screens/games.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
+import 'package:flame/src/components/route.dart' as flame_router;
+import 'package:pyjamaapp/utils/navigation.dart';
+import 'package:pyjamaapp/widgets/app/sections/game_settings_popup.dart';
 
 class FruitNinjaGame extends FlameGame {
   late RouterComponent router;
   late double maxVerticalVelocity;
   bool isPaused = false;
-  int score = 0;
 
   final List<FruitModel> fruits = [
     FruitModel(image: "fruit_ninja/apple.png"),
@@ -58,8 +62,8 @@ class FruitNinjaGame extends FlameGame {
     }
 
     router = RouterComponent(initialRoute: 'home', routes: {
-      'home': Route(HomePage.new),
-      'game-page': Route(GamePage.new),
+      'home': flame_router.Route(HomePage.new),
+      'game-page': flame_router.Route(GamePage.new),
       // 'pause': PauseRoute(),
       'game-over': GameOverRoute()
     });
@@ -82,5 +86,71 @@ class FruitNinjaGame extends FlameGame {
     maxVerticalVelocity = sqrt(2 *
         (AppConfig.gravity.abs() + AppConfig.acceleration.abs()) *
         (size.y - AppConfig.objSize * 2));
+  }
+
+  void showGameCompletedOverlay() {
+    isPaused = true;
+    showDialog(
+      context: ContextUtility.context!,
+      builder: (dialogContext) {
+        return GameSettingsPopup(
+          gameCompleted: true,
+          gameInfo: true,
+          label: "Level Complete",
+          onExit: () {
+            Navigator.of(dialogContext).pop();
+            resetGame();
+          },
+          actions: [
+            SettingActionItem(
+              buttonImage: Image.asset("assets/images/app/next.png"),
+              action: () {
+                Navigator.of(dialogContext).pop();
+                resetGame();
+              },
+            ),
+            SettingActionItem(
+              buttonImage: Image.asset("assets/images/app/exit.png"),
+              action: () {
+                Navigator.of(dialogContext).pop();
+                to(ContextUtility.context!, GamesScreen.route);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showGamePauseOverlay() {
+    showDialog(
+      context: ContextUtility.context!,
+      builder: (dialogContext) {
+        return GameSettingsPopup(
+          gameInfo: true,
+          label: "Pause",
+          onExit: () {
+            Navigator.of(dialogContext).pop();
+            resetGame();
+          },
+          actions: [
+            SettingActionItem(
+              buttonImage: Image.asset("assets/images/app/continue.png"),
+              action: () {
+                Navigator.of(dialogContext).pop();
+                togglePause();
+              },
+            ),
+            SettingActionItem(
+              buttonImage: Image.asset("assets/images/app/exit.png"),
+              action: () {
+                Navigator.of(dialogContext).pop();
+                to(ContextUtility.context!, GamesScreen.route);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

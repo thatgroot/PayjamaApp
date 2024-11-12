@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pyjamaapp/screens/games.dart';
-import 'package:pyjamaapp/screens/web3/buy_nfts.dart';
-import 'package:pyjamaapp/screens/pyjama/daily_tasks.dart';
-import 'package:pyjamaapp/screens/referrals.dart';
+import 'package:pyjamaapp/screens/referrals_screen.dart';
+import 'package:pyjamaapp/screens/web3/marketplace.dart';
 import 'package:pyjamaapp/screens/account/user_profile.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
@@ -23,9 +22,13 @@ class SideBar extends StatelessWidget {
   final VoidCallback onClose;
   final List<MenuItem> menuItems = [
     MenuItem(icon: 'profile.png', title: 'Profile', route: UserProfile.route),
-    MenuItem(icon: 'tasks.png', title: 'Daily Tasks', route: DailyTasks.route),
-    MenuItem(icon: 'buy-nft.png', title: 'Buy NFTs', route: BuyNfts.route),
-    MenuItem(icon: 'referrals.png', title: 'Referrals', route: Referrals.route),
+    MenuItem(icon: 'tasks.png', title: 'Daily Tasks', route: GamesScreen.route),
+    MenuItem(icon: 'buy-nft.png', title: 'Buy NFTs', route: MarketPlace.route),
+    MenuItem(
+      icon: 'referrals.png',
+      title: 'Referrals',
+      route: ReferralsScreen.route,
+    ),
   ];
 
   SideBar({super.key, required this.onClose});

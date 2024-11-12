@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
@@ -86,32 +88,46 @@ class BrickBreakerGame extends FlameGame
 
   void onBrickDestroyed() {
     score += 10;
-    // updateScoreText();
+    log("bricks destroyed called ${bricks.length}");
     final gameProvider = Provider.of<BrickBreakerGameProvider>(
         ContextUtility.context!,
         listen: false);
     gameProvider.update(score);
-
-    if (bricks.isEmpty) {
-      pauseEngine();
-      showLevelCompletePopup();
-    }
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    level = Provider.of<BrickBreakerGameProvider>(ContextUtility.context!,
-            listen: false)
-        .level;
+
+    // var level = provider.level;
     if (ball.isOffScreen(size)) {
       pauseEngine();
+      HiveService.saveCurrentGameScore(score);
+      AudioManager.pauseBackgroundMusic();
       showGameOverPopup();
     }
   }
 
   void showLevelCompletePopup() {
+    // updateScoreText();
+    final gameProvider = Provider.of<BrickBreakerGameProvider>(
+      ContextUtility.context!,
+      listen: false,
+    );
+    pauseEngine();
+
+    HiveService.saveCurrentGameScore(score);
     AudioManager.pauseBackgroundMusic();
+    gameProvider.updateLevel(
+      name: GameNames.brickBreaker,
+      currentLevel: level + 1,
+      oldLevel: level,
+      oldScore: score,
+    );
+
+    level += 1;
+    score = 0;
+
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -135,6 +151,7 @@ class BrickBreakerGame extends FlameGame
             SettingActionItem(
               buttonImage: Image.asset("assets/images/app/exit.png"),
               action: () {
+                AudioManager.stopBackgroundMusic();
                 to(ContextUtility.context!, GamesScreen.route);
               },
             ),
@@ -177,16 +194,12 @@ class BrickBreakerGame extends FlameGame
   }
 
   void resetGameForNextLevel() {
-    level++;
+    log("next resetGameForNextLevel");
     // updateScoreText();
-    final gameProvider = Provider.of<BrickBreakerGameProvider>(
-        ContextUtility.context!,
-        listen: false);
-    gameProvider.updateLevel(GameNames.brickBreaker, level);
+
     bricks.clear();
     removeAll(children);
     onLoad();
-    // updateLevelText();
     resumeEngine();
     isPaused = false;
   }
@@ -202,8 +215,6 @@ class BrickBreakerGame extends FlameGame
     bricks.clear();
     removeAll(children);
     onLoad();
-    // updateScoreText();
-    // updateLevelText();
     resumeEngine();
     isPaused = false;
   }

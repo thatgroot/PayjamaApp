@@ -6,7 +6,7 @@ import 'dart:math';
 import 'dart:developer' as dev;
 import 'package:crypto/crypto.dart';
 
-class ReferralTree {
+class ReferralService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String generateReferralCode(int length) {
     const String chars =
@@ -132,11 +132,21 @@ class ReferralTree {
     return referrals;
   }
 
-  Future<void> printReferrals(String user, int maxDepth) async {
-    List<Map<String, dynamic>> referrals = await getReferrals(user, maxDepth);
-    dev.log("Referrals for $user up to depth $maxDepth:");
+  Future<Map<int, int>> getPerLevelReferrals(
+      List<Map<String, dynamic>> referrals) async {
+    Map<int, int> levelCounts = {};
+
+    // Iterate through the list of referrals
     for (var referral in referrals) {
-      dev.log("User: ${referral['userId']}, Level: ${referral['level']}");
+      int level = referral['level'];
+      // Update the count for the current level
+      if (levelCounts.containsKey(level)) {
+        levelCounts[level] = levelCounts[level]! + 1;
+      } else {
+        levelCounts[level] = 1;
+      }
     }
+
+    return levelCounts;
   }
 }

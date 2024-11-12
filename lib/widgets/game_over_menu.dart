@@ -50,7 +50,7 @@ class GameOverMenu extends StatelessWidget {
                       selector: (_, playerData) => playerData.currentScore,
                       builder: (_, score, __) {
                         return Text(
-                          'You Score: $score',
+                          'Your Score: $score',
                           style: const TextStyle(
                               fontSize: 40, color: Colors.white),
                         );

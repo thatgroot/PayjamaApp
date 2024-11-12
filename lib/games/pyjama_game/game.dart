@@ -57,6 +57,7 @@ class PyjamaRunnerGame extends FlameGame
   // This method get called while flame is preparing this game.
   @override
   Future<void> onLoad() async {
+    await images.loadAll(_imageAssets);
     // Makes the game full screen and landscape only.
     await Flame.device.fullScreen();
     await Flame.device.setLandscape();
@@ -64,6 +65,7 @@ class PyjamaRunnerGame extends FlameGame
     /// Read [PlayerData] and [Settings] from hive.
     playerData = await _readPlayerData();
     settings = await _readSettings();
+    _dino = Dino(images.fromCache('pyjama/Sprite.png'), playerData);
 
     /// Initilize [AudioManager].
     await AudioManager.instance.init(_audioAssets, settings);
@@ -73,7 +75,6 @@ class PyjamaRunnerGame extends FlameGame
     AudioManager.instance.startBgm('pyjama/8BitPlatformerLoop.wav');
 
     // Cache all the images.
-    await images.loadAll(_imageAssets);
 
     // This makes the camera look at the center of the viewport.
     camera.viewfinder.position = camera.viewport.virtualSize * 0.5;
@@ -100,9 +101,7 @@ class PyjamaRunnerGame extends FlameGame
   /// This method add the already created [Dino]
   /// and [EnemyManager] to this game.
   void startGamePlay() {
-    _dino = Dino(images.fromCache('pyjama/Sprite.png'), playerData);
     _enemyManager = EnemyManager();
-
     world.add(_dino);
     world.add(_enemyManager);
   }
@@ -131,13 +130,7 @@ class PyjamaRunnerGame extends FlameGame
     if (playerData.lives <= 0) {
       overlays.add(GameOverMenu.id);
       overlays.remove(Hud.id);
-      HiveService.getCurrentGameScore().then((value) {
-        int score = value;
-        HiveService.setGameScore(
-          GameNames.runner,
-          score + playerData.highScore,
-        );
-      });
+      HiveService.saveCurrentGameScore(playerData.highScore);
       pauseEngine();
       AudioManager.instance.pauseBgm();
     }

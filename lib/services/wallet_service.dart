@@ -120,8 +120,7 @@ class WalletService {
     try {
       final Ed25519HDPublicKey walletPubKey =
           Ed25519HDPublicKey.fromBase58(walletAddress);
-      final Ed25519HDPublicKey mintPubKey =
-          Ed25519HDPublicKey.fromBase58(SolanaConfig.mintAddress);
+      final Ed25519HDPublicKey mintPubKey = SolanaConfig.mintAddress;
 
       // SPL Associated Token Account Program ID
       final Ed25519HDPublicKey associatedTokenProgramId =

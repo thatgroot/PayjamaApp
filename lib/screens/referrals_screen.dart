@@ -2,24 +2,31 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pyjamaapp/config.dart';
+import 'package:pyjamaapp/config/linking.dart';
 import 'package:pyjamaapp/providers/wallet.dart';
 import 'package:pyjamaapp/screens/pyjama/character_display.dart';
 import 'package:pyjamaapp/providers/game.dart';
+import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/firebase.dart';
+import 'package:pyjamaapp/services/hive.dart';
+import 'package:pyjamaapp/services/referral_calculator.dart';
+import 'package:pyjamaapp/services/referral_service.dart';
+import 'package:pyjamaapp/services/solana_wallet_service.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/Wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-class Referrals extends StatefulWidget {
+class ReferralsScreen extends StatefulWidget {
   static String route = "/referrals";
-  const Referrals({super.key});
+  const ReferralsScreen({super.key});
 
   @override
-  State<Referrals> createState() => _ReferralsState();
+  State<ReferralsScreen> createState() => _ReferralsState();
 }
 
-class _ReferralsState extends State<Referrals> {
+class _ReferralsState extends State<ReferralsScreen> {
   @override
   void initState() {
     super.initState();
@@ -164,10 +171,12 @@ class ShareInviteLinkCard extends StatelessWidget {
                     hoverColor: Colors.black38,
                     iconSize: 24.0,
                     onPressed: () {
-                      Clipboard.setData(ClipboardData(text: code));
+                      Clipboard.setData(ClipboardData(
+                          text:
+                              "${LinkingConfig.deepLink}${WalletConfig.toReferral}?code=$code"));
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Referral code copied to clipboard'),
+                          content: Text('Referral Link copied to clipboard'),
                         ),
                       );
                     },
@@ -223,7 +232,6 @@ class _ReferralsContentState extends State<_ReferralsContent> {
   void initState() {
     super.initState();
 
-    // Load referral data once when the widget is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final referralProvider =
           Provider.of<ReferralProvider>(context, listen: false);
@@ -241,7 +249,7 @@ class _ReferralsContentState extends State<_ReferralsContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const EarnMorePJCCard(totalEarnings: 0),
+                const EarnMorePJCCard(),
                 const SizedBox(height: 32),
                 ShareInviteLinkCard(
                   onShare: () async {
@@ -284,10 +292,77 @@ class _ReferralsContentState extends State<_ReferralsContent> {
   }
 }
 
-class EarnMorePJCCard extends StatelessWidget {
-  final int totalEarnings;
+class EarnMorePJCCard extends StatefulWidget {
+  const EarnMorePJCCard({super.key});
 
-  const EarnMorePJCCard({super.key, required this.totalEarnings});
+  @override
+  State<EarnMorePJCCard> createState() => _EarnMorePJCCardState();
+}
+
+class _EarnMorePJCCardState extends State<EarnMorePJCCard> {
+  double totalEarnings = 0;
+  @override
+  void initState() {
+    super.initState();
+
+    fetchScores();
+  }
+
+  void fetchScores() async {
+    var levelScores = await HiveService.getLevlScores();
+    final referralProvider =
+        Provider.of<ReferralProvider>(ContextUtility.context!, listen: false);
+    ReferralService s = ReferralService();
+    var data = await s.getPerLevelReferrals(referralProvider.referrals);
+    var rewardData = {
+      "gameScores": {
+        1: GameScore(
+          levels: levelScores[GameNames.brickBreaker.toString()] ?? {},
+        ),
+        2: GameScore(
+          levels: levelScores[GameNames.fruitNinja.toString()] ?? {},
+        ),
+        3: GameScore(
+          levels: levelScores[GameNames.runner.toString()] ?? {},
+        ),
+      },
+      "nftsHeld": 2,
+      "tokensHeld": 1500,
+      "referralsPerLevel": data,
+    };
+
+    log("reward data $rewardData");
+
+    RewardCalculator calculator = RewardCalculator(
+      gameScores: {
+        1: GameScore(
+          levels: levelScores[GameNames.brickBreaker.toString()] ?? {},
+        ),
+        2: GameScore(
+          levels: levelScores[GameNames.fruitNinja.toString()] ?? {},
+        ),
+        3: GameScore(
+          levels: levelScores[GameNames.runner.toString()] ?? {},
+        ),
+      },
+      nftsHeld: 2,
+      tokensHeld: 1500,
+      referralsPerLevel: data,
+    );
+
+    double rewards = calculator.calculateTotalReward();
+    // {
+    //     GameNames.runner.toString():
+    //         gameScoresData[GameNames.runner.toString()]!,
+    //     GameNames.brickBreaker.toString():
+    //         gameScoresData[GameNames.brickBreaker.toString()]!,
+    //     GameNames.fruitNinja.toString():
+    //         gameScoresData[GameNames.fruitNinja.toString()]!,
+    //   };
+    setState(() {
+      totalEarnings = rewards;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -297,7 +372,7 @@ class EarnMorePJCCard extends StatelessWidget {
 
     const textStyle = TextStyle(
       color: textColor,
-      fontSize: 24,
+      fontSize: 18,
       fontFamily: 'Roboto',
       fontWeight: FontWeight.w500,
       height: 1,
@@ -315,6 +390,42 @@ class EarnMorePJCCard extends StatelessWidget {
             'Earned $totalEarnings PJC',
             style: textStyle,
             textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24),
+          GestureDetector(
+            onTap: () async {
+              SolanaWalletService solanaWalletService = SolanaWalletService();
+              await solanaWalletService.transferFn();
+            },
+            child: Container(
+              width: 160,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: ShapeDecoration(
+                color: const Color(0x26B1B1B1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Image.asset(
+                    "assets/images/pyjama/pyjama.png",
+                    width: 26,
+                    height: 26,
+                  ),
+                  Text(
+                    "Withdraw Tokens",
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

@@ -65,7 +65,7 @@ class Ball extends SpriteComponent with HasGameRef, CollisionCallbacks {
   void launchBall() {
     if (!isLaunched) {
       HiveService.getGameLevel(GameNames.brickBreaker).then((level) {
-        int currentLevel = level ?? 1;
+        int currentLevel = int.parse("${level ?? "0"} ");
         velocity = Vector2(
           150 + (150 * currentLevel * 0.15),
           -150 + (-150 * currentLevel * 0.15),

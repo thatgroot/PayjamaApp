@@ -40,6 +40,7 @@ class GameOverPage extends Component
   @override
   Future<void> onLoad() async {
     final game = findGame()!;
+
     addAll([
       _textComponent = TextComponent(
         text: 'Game Over',

@@ -99,22 +99,54 @@ class HiveService {
     );
   }
 
+  static Future<dynamic> getGameLevel(GameNames key) async {
+    String gameType = games[key]!;
+    return (await getValue(
+          "${gameType}Level",
+        )) ??
+        "0";
+  }
+
+  static Future<void> setGameLevelScore({
+    required GameNames game,
+    required int level,
+    required int score,
+  }) async {
+    String gameType = games[game]!;
+    log("settings level data: ${gameType}Level${level}Score -> $score");
+    (await gameBox()).put(
+      "${gameType}Level${level}Score",
+      "$score",
+    );
+  }
+
+  static Future<Map<int, int>> getGameLevelScore(
+    GameNames game,
+  ) async {
+    String gameType = games[game]!;
+
+    int level = int.parse(await HiveService.getGameLevel(game) ?? "0");
+    Map<int, int> levelScores = {};
+
+    for (var i = 1; i < level + 1; i++) {
+      levelScores[i] =
+          int.parse((await gameBox()).get("${gameType}Level${i}Score") ?? "0");
+    }
+    log("level scores $levelScores");
+    return levelScores;
+  }
+
   static Future<dynamic> getValue(String key) async {
     log("Hive Service key is $key");
     return (await gameBox()).get(key);
   }
 
-  static Future<dynamic> getGameLevel(GameNames key) async {
-    String gameType = games[key]!;
-    return await getValue(
-      "${gameType}Level",
-    );
-  }
-
   static Future<int> getCurrentGameScore() async {
     {
-      var globalGameProvider =
-          Provider.of<GlobalGameProvider>(ContextUtility.context!);
+      var globalGameProvider = Provider.of<GlobalGameProvider>(
+        ContextUtility.context!,
+        listen: false,
+      );
 
       dynamic score =
           await HiveService.getGameScore(globalGameProvider.gameName);
@@ -123,12 +155,48 @@ class HiveService {
     }
   }
 
-  static Future<dynamic> getGameScore(GameNames key) async {
+  static Future<void> saveCurrentGameScore(int newScore) async {
+    int oldScore = await HiveService.getCurrentGameScore();
+    var provider =
+        Provider.of<GlobalGameProvider>(ContextUtility.context!, listen: false);
+    log("current game ${provider.gameName} prevScore $oldScore now $newScore total ${newScore + oldScore}");
+    HiveService.setGameScore(provider.gameName, newScore + newScore);
+  }
+
+  static Future<int> getGameScore(GameNames key) async {
     String gameType = games[key]!;
-    return await getValue(gameType);
+    return int.parse("${await getValue(gameType) ?? "0"}");
   }
 
   static Future<dynamic> getData(HiveKeys key) async {
     return await getValue(keys[key]!);
+  }
+
+  static Future<Map<String, Map<int, int>>> getLevlScores() async {
+    var runnerScore = await HiveService.getGameScore(GameNames.runner);
+
+    Map<int, int> brickScoreMap =
+        await HiveService.getGameLevelScore(GameNames.brickBreaker);
+    Map<int, int> fruitScoreMap =
+        await HiveService.getGameLevelScore(GameNames.fruitNinja);
+    Map<int, int> runnerScoreMap = {6: runnerScore};
+
+    return {
+      "${GameNames.runner}": runnerScoreMap,
+      "${GameNames.brickBreaker}": brickScoreMap,
+      "${GameNames.fruitNinja}": fruitScoreMap,
+    };
+  }
+
+  static Future<Map<String, int>> getGameScores() async {
+    var runnerScore = await HiveService.getGameScore(GameNames.runner);
+    var brickScore = await HiveService.getGameScore(GameNames.brickBreaker);
+    var fruitScore = await HiveService.getGameScore(GameNames.fruitNinja);
+
+    return {
+      "${GameNames.runner}": runnerScore,
+      "${GameNames.brickBreaker}": brickScore,
+      "${GameNames.fruitNinja}": fruitScore,
+    };
   }
 }

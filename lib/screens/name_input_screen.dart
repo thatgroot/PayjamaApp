@@ -1,13 +1,11 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:pyjamaapp/providers/wallet.dart';
 import 'package:pyjamaapp/screens/loading_screen.dart';
+import 'package:pyjamaapp/screens/wallet_screen.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/firebase.dart';
-import 'package:pyjamaapp/services/referral_tree.dart';
+import 'package:pyjamaapp/services/referral_service.dart';
 import 'package:pyjamaapp/services/hive.dart';
+import 'package:pyjamaapp/utils/navigation.dart';
 
 class NameInputScreen extends StatefulWidget {
   const NameInputScreen({super.key});
@@ -29,14 +27,12 @@ class _NameInputScreenState extends State<NameInputScreen> {
     HiveService.setData(HiveKeys.name, name);
     final FirestoreService firestoreService = FirestoreService();
 
-    log("pubkey is $pubkey");
+    ReferralService referralService = ReferralService();
 
-    ReferralTree tree = ReferralTree();
-
-    String id = await tree.registerUser(name);
+    String id = await referralService.registerUser(name);
 
     if (code.length > 1) {
-      await tree.addReferral(code, id);
+      await referralService.addReferral(code, id);
     }
     var doc = await firestoreService.getDocument("info", pubkey);
     if (!doc.exists) {
@@ -51,16 +47,11 @@ class _NameInputScreenState extends State<NameInputScreen> {
       );
     }
 
-    Navigator.pushReplacement(
-      ContextUtility.context!,
-      MaterialPageRoute(builder: (context) => const LoadingScreen()),
-    );
+    to(ContextUtility.context!, LoadingScreen.route);
   }
 
   @override
   Widget build(BuildContext context) {
-    final walletProvider = Provider.of<WalletProvider>(context);
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -219,8 +210,15 @@ class _NameInputScreenState extends State<NameInputScreen> {
                 height: 18,
               ),
               TextButton(
-                onPressed: () {
-                  _navigateToLoadingScreen(walletProvider.publicKey!);
+                onPressed: () async {
+                  var walletPubKey =
+                      await HiveService.getData(HiveKeys.userPublicKey)
+                          as String;
+                  if (walletPubKey.isEmpty) {
+                    to(ContextUtility.context!, WalletScreen.route);
+                  } else {
+                    _navigateToLoadingScreen(walletPubKey);
+                  }
                 },
                 child: Container(
                   width: 264,

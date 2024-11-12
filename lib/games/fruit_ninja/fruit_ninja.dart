@@ -4,12 +4,8 @@ import 'package:provider/provider.dart';
 
 import 'package:pyjamaapp/games/fruit_ninja/game.dart';
 import 'package:pyjamaapp/providers/game.dart';
-import 'package:pyjamaapp/screens/games.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
-import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/game_action_bar.dart';
-import 'package:pyjamaapp/widgets/app/sections/game_settings_popup.dart';
-import 'package:pyjamaapp/widgets/app/sections/popover_manager.dart';
 import 'package:pyjamaapp/widgets/app/wrapper.dart';
 
 class FruitNinja extends StatefulWidget {
@@ -20,7 +16,6 @@ class FruitNinja extends StatefulWidget {
 }
 
 class FruitNinjaState extends State<FruitNinja> {
-  final PopoverManager _popoverManager = PopoverManager();
   bool paused = false;
   late FruitNinjaGame _game;
   final gameProvider = Provider.of<FruitNinjaGameProvider>(
@@ -30,73 +25,13 @@ class FruitNinjaState extends State<FruitNinja> {
   @override
   void initState() {
     super.initState();
-    _game = FruitNinjaGame();
 
     if (mounted) {
-      gameProvider.setCompletePopover = () {
-        showGameCompletedOverlay();
-      };
+      _game = FruitNinjaGame();
       setState(() {
         paused = _game.isPaused;
       });
     }
-  }
-
-  void showGamePauseOverlay() {
-    _popoverManager.showOverlay(
-      context,
-      GameSettingsPopup(
-        gameInfo: true,
-        label: "Pause",
-        onExit: _popoverManager.removeOverlay,
-        actions: [
-          SettingActionItem(
-            buttonImage: Image.asset("assets/images/app/continue.png"),
-            action: () {
-              _game.togglePause();
-              _popoverManager.removeOverlay();
-            },
-          ),
-          SettingActionItem(
-            buttonImage: Image.asset("assets/images/app/exit.png"),
-            action: () {
-              // Implement exit logic, e.g., navigate to main menu
-              _popoverManager.removeOverlay();
-              to(ContextUtility.context!, GamesScreen.route);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void showGameCompletedOverlay() {
-    _popoverManager.showOverlay(
-      context,
-      GameSettingsPopup(
-        gameCompleted: true,
-        gameInfo: true,
-        label: "Level Complete",
-        onExit: _popoverManager.removeOverlay,
-        actions: [
-          SettingActionItem(
-            buttonImage: Image.asset("assets/images/app/next.png"),
-            action: () {
-              _popoverManager.removeOverlay();
-              _game.resetGame();
-            },
-          ),
-          SettingActionItem(
-            buttonImage: Image.asset("assets/images/app/exit.png"),
-            action: () {
-              // Implement exit logic, e.g., navigate to main menu
-              _popoverManager.removeOverlay();
-              to(ContextUtility.context!, GamesScreen.route);
-            },
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -125,9 +60,7 @@ class FruitNinjaState extends State<FruitNinja> {
                   action: () {
                     _game.togglePause();
                     if (_game.isPaused) {
-                      showGamePauseOverlay();
-                    } else {
-                      _popoverManager.removeOverlay();
+                      _game.showGamePauseOverlay();
                     }
 
                     setState(() {

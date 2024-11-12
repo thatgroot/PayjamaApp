@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:typed_data';
 
 import 'package:pyjamaapp/config.dart';
 import 'package:pyjamaapp/config/linking.dart';
 import 'package:pyjamaapp/config/solana.dart';
+import 'package:pyjamaapp/services/hive.dart';
 import 'package:solana/base58.dart';
+import 'package:solana/dto.dart' as dto;
 import 'package:solana/solana.dart';
+import 'package:solana_web3/solana_web3.dart' as web3;
+import 'package:solana_web3/programs.dart' as web3_programs;
 import 'package:solana/encoder.dart';
 import 'package:pinenacl/x25519.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -25,25 +28,58 @@ class SolanaWalletService {
   static WalletConnectionStatus _connectionStatus =
       WalletConnectionStatus.disconnected;
 
-  late SolanaCluster cluster = SolanaConfig.cluster;
-
+  static SolanaCluster cluster = SolanaConfig.cluster;
+  // Create Solana client
+  static late SolanaClient client;
   static void init() {
+    // _dAppSecretKey = PrivateKey.fromSeed(
+    //   Uint8List.fromList(WalletConfig.dAppPrivateKey),
+    // );
     _dAppSecretKey = PrivateKey.generate();
     dAppPublicKey = _dAppSecretKey.publicKey;
-    log('dApp Secret Key: ${base58encode(_dAppSecretKey.asTypedList)}');
-    log('dApp Public Key: ${base58encode(dAppPublicKey.asTypedList)}');
+    log("dapp secret and pubkey:$_dAppSecretKey -> ${base58encode(_dAppSecretKey.publicKey.toUint8List())}");
+    client = SolanaClient(
+      websocketUrl: cluster == SolanaCluster.devnet
+          ? Uri.parse(
+              SolanaConfig.devnetWsUrl,
+            )
+          : Uri.parse(
+              SolanaConfig.mainnetWsUrl,
+            ),
+      rpcUrl: cluster == SolanaCluster.devnet
+          ? Uri.parse(
+              SolanaConfig.devnetRpcUrl,
+            )
+          : Uri.parse(
+              SolanaConfig.mainnetRpcUrl,
+            ),
+    );
   }
 
   // Getters for important information
   String? get sessionToken => _sessionToken;
   static String? get userPublicKey => _userPublicKey;
   WalletConnectionStatus get connectionStatus => _connectionStatus;
+  static Map<String, String> _connectParams() {
+    return {
+      'dapp_encryption_public_key': base58encode(dAppPublicKey.asTypedList),
+      'cluster':
+          SolanaConfig.cluster == SolanaCluster.devnet ? 'devnet' : 'mainnet',
+      'app_url': LinkingConfig.appUrl,
+      'redirect_link': '${LinkingConfig.deepLink}${WalletConfig.toConnected}',
+    };
+  }
+
   static void connect() {
+    var params = _connectParams();
     try {
-      Uri uri = generateConnectUri(
-        cluster: SolanaConfig.cluster,
-        redirect: WalletConfig.toConnected,
+      Uri uri = Uri(
+        scheme: LinkingConfig.scheme,
+        host: LinkingConfig.host,
+        path: WalletConfig.connect,
+        queryParameters: params,
       );
+
       launchUrl(uri, mode: LaunchMode.externalNonBrowserApplication);
     } catch (e) {
       log('$debugKey $e');
@@ -51,45 +87,22 @@ class SolanaWalletService {
     }
   }
 
-  static Uri generateConnectUri(
-      {required SolanaCluster cluster, required String redirect}) {
-    return buildUri(
-      WalletConfig.connect,
-      {
-        'dapp_encryption_public_key': base58encode(dAppPublicKey.asTypedList),
-        'cluster': cluster == SolanaCluster.devnet ? 'devnet' : 'mainnet',
-        'app_url': LinkingConfig.appUrl,
-        'redirect_link': '${LinkingConfig.deepLink}$redirect',
-      },
-    );
-  }
-
-  static Uri buildUri(String path, Map<String, dynamic> queryParams) {
-    return Uri(
-      scheme: LinkingConfig.scheme,
-      host: LinkingConfig.host,
-      path: path,
-      queryParameters: queryParams,
-    );
-  }
-
   /// Verify and create session after wallet response
-  static bool verifySession(Uri uri) {
+  static Future<bool> verifySession(Uri uri) async {
     try {
       Map<String, List<String>> allParams = uri.queryParametersAll;
-
-      log("all query params $allParams");
-      // Validate required parameters
-      // _connectionStatus = WalletConnectionStatus.error;
 
       String phantomPublicKey = allParams['phantom_encryption_public_key']![0];
       String nonce = allParams['nonce']![0];
       String data = allParams['data']![0];
 
-      // Create shared secret
-      _createSharedSecret(base58decode(phantomPublicKey).toUint8List());
+      await HiveService.setData(
+        HiveKeys.phantomEncryptionPublicKey,
+        phantomPublicKey,
+      );
 
-      // Decrypt payload
+      await _createSharedSecret();
+
       final decryptedData = _decryptPayload(data: data, nonce: nonce);
 
       // Update session details
@@ -97,149 +110,181 @@ class SolanaWalletService {
       _userPublicKey = decryptedData['public_key'];
       _connectionStatus = WalletConnectionStatus.connected;
 
-      log('Session created: $_sessionToken');
-      log('User Public Key: $_userPublicKey');
+      await HiveService.setData(HiveKeys.userPublicKey, _userPublicKey);
+      await HiveService.setData(HiveKeys.walletSession, _sessionToken);
 
       return true;
     } catch (e) {
-      log('Session verification failed: $e');
-      _connectionStatus = WalletConnectionStatus.error;
-      return false;
+      throw Error.safeToString(e);
     }
   }
 
-  /// Validate session parameters
-  bool _validateSessionParameters(Map<String, List<String>> allParams) {
-    return allParams.containsKey('phantom_encryption_public_key') &&
-        allParams.containsKey('data') &&
-        allParams.containsKey('nonce');
+  Future<Uri> mintNFT(String toAddress, String redirectTo) async {
+    // Get latest blockhash
+    final String blockhash = await client.rpcClient
+        .getLatestBlockhash()
+        .then((b) => b.value.blockhash);
+
+    Ed25519HDPublicKey authorityPubKey = Ed25519HDPublicKey.fromBase58(
+        SolanaConfig.mintAuthority.publicKey.toBase58());
+
+    log("$debugKey $authorityPubKey");
+
+    Ed25519HDPublicKey to = Ed25519HDPublicKey.fromBase58(toAddress);
+
+    Ed25519HDPublicKey destination =
+        await findAssociatedTokenAddress(toAddress);
+
+    final instructions = [
+      AssociatedTokenAccountInstruction.createAccount(
+        funder: authorityPubKey,
+        address: destination,
+        owner: to,
+        mint: SolanaConfig.mintAddress,
+      ),
+      TokenInstruction.mintTo(
+        mint: SolanaConfig.mintAddress,
+        destination: destination,
+        authority: authorityPubKey,
+        amount: 1,
+      )
+    ];
+
+    // Create the message
+    final message = Message(
+      instructions: instructions,
+    );
+
+    final compiledMessage = message.compile(
+      recentBlockhash: blockhash,
+      feePayer: authorityPubKey,
+    );
+
+    // Sign the transaction
+    final tx = SignedTx(
+      compiledMessage: compiledMessage,
+      signatures: [Signature(List.filled(64, 0), publicKey: authorityPubKey)],
+    );
+
+    // Generate sign transaction URI
+    Uri signUri = await _generateSignTransactionUri(
+      transaction: base64.encode(tx.toByteArray().toList()),
+      redirect: redirectTo,
+    );
+
+    return signUri;
   }
 
-  /// Transfer SOL tokens with enhanced error handling
-  Future<TransactionResult> transferSOL({
-    required String from,
-    required String to,
-    required int amount,
-    String? feePayer,
-  }) async {
-    if (_connectionStatus != WalletConnectionStatus.connected) {
-      return TransactionResult.error('Wallet not connected');
-    }
-
+  Future<Ed25519HDPublicKey> findAssociatedTokenAddress(String wallet,
+      {String? mint}) async {
     try {
-      // Validate wallet addresses
-      Ed25519HDPublicKey fromPubKey = Ed25519HDPublicKey.fromBase58(from);
-      Ed25519HDPublicKey toPubKey = Ed25519HDPublicKey.fromBase58(to);
-      Ed25519HDPublicKey feePayerKey = feePayer != null
-          ? Ed25519HDPublicKey.fromBase58(feePayer)
-          : fromPubKey;
+      final Ed25519HDPublicKey walletPubKey =
+          Ed25519HDPublicKey.fromBase58(wallet);
 
-      // Create Solana client
-      SolanaClient client = SolanaClient(
-        websocketUrl: cluster == SolanaCluster.devnet
-            ? Uri.parse(SolanaConfig.devnetWsUrl)
-            : Uri.parse(
-                SolanaConfig.mainnetWsUrl,
-              ),
-        rpcUrl: cluster == SolanaCluster.devnet
-            ? Uri.parse(SolanaConfig.devnetRpcUrl)
-            : Uri.parse(SolanaConfig.mainnetRpcUrl),
+      bool has = await client.hasAssociatedTokenAccount(
+        owner: walletPubKey,
+        mint: SolanaConfig.mintAddress,
       );
+      if (has) {
+        dto.ProgramAccount? account = await client.getAssociatedTokenAccount(
+          owner: walletPubKey,
+          mint: mint!.isNotEmpty
+              ? Ed25519HDPublicKey.fromBase58(mint)
+              : SolanaConfig.mintAddress,
+        );
+        // log("account data ${account!.account.data!.toJson()}");
 
-      // Prepare transfer instruction
-      final transfer = SystemInstruction.transfer(
-        fundingAccount: fromPubKey,
-        recipientAccount: toPubKey,
-        lamports: amount * lamportsPerSol,
-      );
+        var address = Ed25519HDPublicKey.fromBase58(account!.pubkey);
+        log('$debugKey has mint ata $address');
+        return address;
+      } else {
+        // Find PDA for associated token account
+        List<Uint8List> seeds = [
+          walletPubKey.bytes.toUint8List(),
+          SolanaConfig.tokenProgramId.bytes.toUint8List(),
+          SolanaConfig.mintAddress.bytes.toUint8List(),
+        ];
 
-      // Get latest blockhash
-      final String blockhash = await client.rpcClient
-          .getLatestBlockhash()
-          .then((b) => b.value.blockhash);
+        // Create the address
+        final addressResult = await Ed25519HDPublicKey.findProgramAddress(
+          seeds: seeds,
+          programId: SolanaConfig.associatedTokenProgramId,
+        );
 
-      // Compile message
-      final message = Message.only(transfer);
-      final compiledMessage = message.compile(
-        recentBlockhash: blockhash,
-        feePayer: feePayerKey,
-      );
-
-      // Prepare transaction for signing
-      final tx = SignedTx(
-        compiledMessage: compiledMessage,
-        signatures: [Signature(List.filled(64, 0), publicKey: fromPubKey)],
-      );
-
-      // Generate sign transaction URI
-      Uri signUri = _generateSignTransactionUri(
-        transaction: tx.encode(),
-        redirect: '/transaction-completed',
-      );
-
-      return TransactionResult.pending(signUri);
+        log('$debugKey not has mint ata $addressResult');
+        return addressResult;
+      }
     } catch (e) {
-      log('Transfer error: $e');
-      return TransactionResult.error(e.toString());
+      log('$debugKey Error finding associated token address: $e');
+      rethrow;
     }
   }
 
   /// Generate URI for signing a transaction
-  Uri _generateSignTransactionUri({
+  Future<Uri> _generateSignTransactionUri({
     required String transaction,
     required String redirect,
-  }) {
+  }) async {
+    dynamic session = await HiveService.getData(HiveKeys.walletSession);
     var payload = {
-      "transaction": base58encode(
-        Uint8List.fromList(base64.decode(transaction)),
-      ),
-      "session": _sessionToken,
+      "transaction": transaction,
+      "session": session,
     };
-    var encryptedPayload = _encryptPayload(payload);
 
+    var data = await _encryptPayload(payload);
+    var nonce = base58encode(data["nonce"]);
+    var dappEncPubKey = base58encode(
+      dAppPublicKey.toUint8List(),
+    );
+    var redirectLink = "${LinkingConfig.deepLink}$redirect";
     return Uri(
       scheme: LinkingConfig.scheme,
       host: LinkingConfig.host,
-      path: '/signTransaction',
+      path: WalletConfig.signAndSendTransaction,
+      // path: '/signTransaction',
       queryParameters: {
-        "dapp_encryption_public_key": base58encode(dAppPublicKey.asTypedList),
-        "nonce": base58encode(encryptedPayload["nonce"]),
-        'redirect_link': "${LinkingConfig.deepLink}$redirect",
-        'payload': base58encode(encryptedPayload["encryptedPayload"])
+        "dapp_encryption_public_key": dappEncPubKey,
+        "nonce": nonce,
+        'redirect_link': redirectLink,
+        'payload': payload
       },
     );
   }
 
   /// Encrypt payload for Phantom wallet
-  Map<String, dynamic> _encryptPayload(Map<String, dynamic> data) {
+  Future<Map<String, dynamic>> _encryptPayload(
+      Map<String, dynamic> payload) async {
     if (_sharedSecret == null) {
-      throw Exception("Shared secret not initialized");
+      await _createSharedSecret();
     }
 
     final nonce = PineNaClUtils.randombytes(24);
-    final payload = Uint8List.fromList(utf8.encode(jsonEncode(data)));
+
+    final payloadList = jsonEncode(payload).codeUnits.toUint8List();
 
     final encryptedPayload = _sharedSecret!
         .encrypt(
-          Uint8List.fromList(payload),
+          Uint8List.fromList(payloadList),
           nonce: nonce,
         )
         .cipherText;
 
     return {
-      "encryptedPayload": encryptedPayload.asTypedList,
+      "data": encryptedPayload,
       "nonce": nonce,
     };
   }
 
   /// Create shared secret for encryption
-  static void _createSharedSecret(Uint8List remotePubKey) {
-    log('Remote Public Key: ${base58encode(remotePubKey)}');
+  static Future<void> _createSharedSecret() async {
+    String pubKey =
+        await HiveService.getData(HiveKeys.phantomEncryptionPublicKey);
+    var theirPublicKey = PublicKey(base58decode(pubKey).toUint8List());
     _sharedSecret = Box(
       myPrivateKey: _dAppSecretKey,
-      theirPublicKey: PublicKey(remotePubKey),
+      theirPublicKey: theirPublicKey,
     );
-    log('Shared Secret created with Remote Public Key');
+    log('$debugKey Shared Secret created with Remote Public Key');
   }
 
   static Map<String, dynamic> _decryptPayload({
@@ -247,7 +292,7 @@ class SolanaWalletService {
     required String nonce,
   }) {
     if (_sharedSecret == null) {
-      log('Shared secret is null');
+      log('$debugKey Shared secret is null');
       return {};
     }
 
@@ -256,8 +301,8 @@ class SolanaWalletService {
       final decodedData = base58decode(data);
       final decodedNonce = base58decode(nonce);
 
-      log('Decoded data: $decodedData');
-      log('Decoded nonce: $decodedNonce');
+      log('$debugKey Decoded data: $decodedData');
+      log('$debugKey Decoded nonce: $decodedNonce');
 
       // Decrypt the data
       final decryptedData = _sharedSecret!.decrypt(
@@ -267,11 +312,11 @@ class SolanaWalletService {
 
       // Convert decrypted data to a readable format
       final jsonData = utf8.decode(decryptedData);
-      log('Decrypted data: $jsonData');
+      log('$debugKey Decrypted data: $jsonData');
 
       return jsonDecode(jsonData);
     } catch (e) {
-      log('Decryption failed: $e');
+      log('$debugKey Decryption failed: $e');
       return {};
     }
   }
@@ -283,21 +328,208 @@ class SolanaWalletService {
     _sharedSecret = null;
     _connectionStatus = WalletConnectionStatus.disconnected;
   }
-}
 
-/// Transaction result class for better transaction handling
-class TransactionResult {
-  final String status;
-  final dynamic data;
+  Future<void> transferFn() async {
+    String payer =
+        await HiveService.getData(HiveKeys.phantomEncryptionPublicKey);
 
-  TransactionResult._(this.status, this.data);
+    final String blockhash = await client.rpcClient
+        .getLatestBlockhash()
+        .then((b) => b.value.blockhash);
 
-  factory TransactionResult.pending(Uri signUri) =>
-      TransactionResult._('pending', signUri);
+    var tx = web3.Transaction.v0(
+      payer: web3.Pubkey.fromBase58(payer),
+      instructions: [
+        web3_programs.SystemProgram.transfer(
+          fromPubkey: web3.Pubkey.fromBase58(payer),
+          toPubkey: web3.Pubkey.fromBase58(payer),
+          lamports: lamportsPerSol.toBigInt(),
+        )
+      ],
+      recentBlockhash: blockhash,
+    );
+    Uint8List serializedTxBytes = tx
+        .serialize(
+          web3.TransactionSerializableConfig(requireAllSignatures: false),
+        )
+        .asUint8List();
 
-  factory TransactionResult.error(String message) =>
-      TransactionResult._('error', message);
+    final serializedTx = base58encode(serializedTxBytes);
+    String session = await HiveService.getData(HiveKeys.walletSession);
+    final payloadToEncrypt = {
+      'transaction': serializedTx,
+      'session': session,
+    };
+    Map<String, dynamic> encryptedPayload =
+        await _encryptPayload(payloadToEncrypt);
 
-  factory TransactionResult.success(String txId) =>
-      TransactionResult._('success', txId);
+    final uri = Uri(
+        scheme: LinkingConfig.scheme,
+        host: LinkingConfig.host,
+        path: WalletConfig.signAndSendTransaction,
+        queryParameters: {
+          'dapp_encryption_public_key': base58encode(dAppPublicKey.toList()),
+          'nonce': base58encode(encryptedPayload['nonce']),
+          'redirect_link':
+              '${LinkingConfig.deepLink}${WalletConfig.toMarketplace}',
+          'payload': base58encode(encryptedPayload['data'])
+        });
+
+    await launchUrl(uri, mode: LaunchMode.externalNonBrowserApplication);
+  }
+
+  Future<void> transferToken() async {
+    String payer =
+        await HiveService.getData(HiveKeys.phantomEncryptionPublicKey);
+
+    final String blockhash = await client.rpcClient
+        .getLatestBlockhash()
+        .then((b) => b.value.blockhash);
+
+    final tokenAccount = web3.Pubkey.fromBase58(
+        (await findAssociatedTokenAddress(payer)).toBase58());
+    log('$debugKey has account $tokenAccount');
+
+    var createAtaInstruction = web3_programs.AssociatedTokenProgram.create(
+      fundingAccount: web3.Pubkey.fromBase58(payer),
+      associatedTokenAccount: tokenAccount,
+      associatedTokenAccountOwner: web3.Pubkey.fromBase58(payer),
+      tokenMint: web3.Pubkey.fromBase58(SolanaConfig.mintAddress.toBase58()),
+    );
+
+    var authority = web3.Pubkey.fromBase58(
+      SolanaConfig.mintAuthority.publicKey.toBase58(),
+    );
+    var mint = web3.Pubkey.fromBase58(SolanaConfig.mintAddress.toBase58());
+    log("$debugKey authority $authority mint $mint");
+// web3_programs.TokenProgram.initializeAccount(account: account, mint: mint, owner: owner)
+    var mintoAta = web3_programs.TokenProgram.mintTo(
+      mint: mint,
+      account: tokenAccount,
+      mintAuthority: authority,
+      amount: 1.toBigInt(),
+    );
+
+    var tx = web3.Transaction.v0(
+      payer: web3.Pubkey.fromBase58(payer),
+      instructions: [createAtaInstruction, mintoAta],
+      recentBlockhash: blockhash,
+    );
+
+    Uint8List serializedTxBytes = tx
+        .serialize(
+          web3.TransactionSerializableConfig(requireAllSignatures: false),
+        )
+        .asUint8List();
+
+    final serializedTx = base58encode(serializedTxBytes);
+    String session = await HiveService.getData(HiveKeys.walletSession);
+    final payloadToEncrypt = {
+      'transaction': serializedTx,
+      'session': session,
+    };
+    Map<String, dynamic> encryptedPayload =
+        await _encryptPayload(payloadToEncrypt);
+
+    final uri = Uri(
+        scheme: LinkingConfig.scheme,
+        host: LinkingConfig.host,
+        path: WalletConfig.signAndSendTransaction,
+        queryParameters: {
+          'dapp_encryption_public_key': base58encode(dAppPublicKey.toList()),
+          'nonce': base58encode(encryptedPayload['nonce']),
+          'redirect_link':
+              '${LinkingConfig.deepLink}${WalletConfig.toMarketplace}',
+          'payload': base58encode(encryptedPayload['data'])
+        });
+
+    await launchUrl(uri, mode: LaunchMode.externalNonBrowserApplication);
+  }
+
+  Future<void> mintFn() async {
+    String payer =
+        await HiveService.getData(HiveKeys.phantomEncryptionPublicKey);
+
+    final String blockhash = await client.rpcClient
+        .getLatestBlockhash()
+        .then((b) => b.value.blockhash);
+
+    final tokenAccount = web3.Pubkey.fromBase58(
+        (await findAssociatedTokenAddress(payer)).toBase58());
+    log('$debugKey has account $tokenAccount');
+
+    var createAtaInstruction = web3_programs.AssociatedTokenProgram.create(
+      fundingAccount: web3.Pubkey.fromBase58(payer),
+      associatedTokenAccount: tokenAccount,
+      associatedTokenAccountOwner: web3.Pubkey.fromBase58(payer),
+      tokenMint: web3.Pubkey.fromBase58(SolanaConfig.mintAddress.toBase58()),
+    );
+
+    var authority = web3.Pubkey.fromBase58(
+      SolanaConfig.mintAuthority.publicKey.toBase58(),
+    );
+    var mint = web3.Pubkey.fromBase58(SolanaConfig.mintAddress.toBase58());
+    log("$debugKey authority $authority mint $mint");
+// web3_programs.TokenProgram.initializeAccount(account: account, mint: mint, owner: owner)
+    var mintoAta = web3_programs.TokenProgram.mintTo(
+      mint: mint,
+      account: tokenAccount,
+      mintAuthority: authority,
+      amount: 1.toBigInt(),
+    );
+
+    var tx = web3.Transaction.v0(
+      payer: web3.Pubkey.fromBase58(payer),
+      instructions: [createAtaInstruction, mintoAta],
+      recentBlockhash: blockhash,
+    );
+
+    Uint8List serializedTxBytes = tx
+        .serialize(
+          web3.TransactionSerializableConfig(requireAllSignatures: false),
+        )
+        .asUint8List();
+
+    final serializedTx = base58encode(serializedTxBytes);
+    String session = await HiveService.getData(HiveKeys.walletSession);
+    final payloadToEncrypt = {
+      'transaction': serializedTx,
+      'session': session,
+    };
+    Map<String, dynamic> encryptedPayload =
+        await _encryptPayload(payloadToEncrypt);
+
+    final uri = Uri(
+        scheme: LinkingConfig.scheme,
+        host: LinkingConfig.host,
+        path: WalletConfig.signAndSendTransaction,
+        queryParameters: {
+          'dapp_encryption_public_key': base58encode(dAppPublicKey.toList()),
+          'nonce': base58encode(encryptedPayload['nonce']),
+          'redirect_link':
+              '${LinkingConfig.deepLink}${WalletConfig.toMarketplace}',
+          'payload': base58encode(encryptedPayload['data'])
+        });
+
+    await launchUrl(uri, mode: LaunchMode.externalNonBrowserApplication);
+  }
+
+  Future<int> getNFTBalance(String address) async {
+    final account = await client.rpcClient.getAccountInfo(address);
+    final accountData = account.value!.data!.toJson();
+    log('$debugKey account data $accountData');
+    return 1;
+  }
+
+  Future<int> getTokenBalance(String address) async {
+    var tokenAmount = await client.getTokenBalance(
+      owner: Ed25519HDPublicKey.fromBase58(address),
+      mint: Ed25519HDPublicKey.fromBase58(
+          "SMBH3wF6baUj6JWtzYvqcKuj2XCKWDqQxzspY12xPND"),
+    );
+    if (tokenAmount.amount.isNotEmpty) {
+      return int.parse(tokenAmount.amount);
+    }
+    return 0;
+  }
 }
