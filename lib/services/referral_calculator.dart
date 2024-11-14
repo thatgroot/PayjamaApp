@@ -1,3 +1,9 @@
+import 'package:provider/provider.dart';
+import 'package:pyjamaapp/providers/game.dart';
+import 'package:pyjamaapp/services/context_utility.dart';
+import 'package:pyjamaapp/services/hive.dart';
+import 'package:pyjamaapp/services/referral_service.dart';
+
 class GameScore {
   final Map<int, int> levels;
 
@@ -5,17 +11,10 @@ class GameScore {
 }
 
 class RewardCalculator {
-  final Map<int, GameScore> gameScores;
-  final int nftsHeld;
-  final int tokensHeld;
-  final Map<int, int> referralsPerLevel;
-
-  RewardCalculator({
-    required this.gameScores,
-    required this.nftsHeld,
-    required this.tokensHeld,
-    required this.referralsPerLevel,
-  });
+  late Map<int, GameScore> gameScores;
+  late int nftsHeld;
+  late int tokensHeld;
+  late Map<int, int> referralsPerLevel;
 
   static const double nftRewardMultiplier = 0.5;
   static const double tokenRewardMultiplier = 0.2;
@@ -32,15 +31,15 @@ class RewardCalculator {
     return totalBaseReward;
   }
 
-  double calculateNFTReward() {
+  double _calculateNFTReward() {
     return nftsHeld * nftRewardMultiplier;
   }
 
-  double calculateTokenReward() {
+  double _calculateTokenReward() {
     return tokensHeld * tokenRewardMultiplier;
   }
 
-  double calculateReferralReward() {
+  double _calculateReferralReward() {
     double totalReferralReward = 0;
     for (int level = 1; level <= maxReferralLevel; level++) {
       totalReferralReward +=
@@ -49,16 +48,42 @@ class RewardCalculator {
     return totalReferralReward;
   }
 
-  double calculateTotalReward() {
+  Future<double> calculateTokenRewards() async {
+    var levelScores = await HiveService.getLevlScores();
+    final referralProvider =
+        Provider.of<ReferralProvider>(ContextUtility.context!, listen: false);
+    ReferralService s = ReferralService();
+    var data = await s.getPerLevelReferrals(referralProvider.referrals);
+
+    gameScores = {
+      1: GameScore(
+        levels: levelScores[GameNames.brickBreaker.toString()] ?? {},
+      ),
+      2: GameScore(
+        levels: levelScores[GameNames.fruitNinja.toString()] ?? {},
+      ),
+      3: GameScore(
+        levels: levelScores[GameNames.runner.toString()] ?? {},
+      ),
+    };
+
+    nftsHeld = 2;
+    tokensHeld = 1500;
+    referralsPerLevel = data;
+
+    return _calculateTotalReward();
+  }
+
+  double _calculateTotalReward() {
     double totalBaseReward = 0;
 
     gameScores.forEach((gameNumber, gameScore) {
       totalBaseReward += calculateBaseReward(gameScore);
     });
 
-    double nftReward = calculateNFTReward();
-    double tokenReward = calculateTokenReward();
-    double referralReward = calculateReferralReward();
+    double nftReward = _calculateNFTReward();
+    double tokenReward = _calculateTokenReward();
+    double referralReward = _calculateReferralReward();
 
     return double.parse(
       (totalBaseReward + nftReward + tokenReward + referralReward)

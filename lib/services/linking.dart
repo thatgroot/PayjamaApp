@@ -4,8 +4,9 @@ import 'package:app_links/app_links.dart';
 import 'package:provider/provider.dart';
 import 'package:pyjamaapp/config.dart';
 import 'package:pyjamaapp/providers/wallet.dart';
-import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/screens/app_screen.dart';
 import 'package:pyjamaapp/screens/referrals_screen.dart';
+import 'package:pyjamaapp/screens/wallet_screen.dart';
 import 'package:pyjamaapp/screens/web3/marketplace.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/solana_wallet_service.dart';
@@ -38,7 +39,9 @@ class LinkingService {
 
     String route = uri.pathSegments.isNotEmpty ? uri.pathSegments.last : '';
     log("$debugKey route $route , ${route == WalletConfig.toConnected}");
-    if (route == WalletConfig.toMarketplace) {
+    if (route == WalletConfig.toDisConnected) {
+      to(ContextUtility.context!, WalletScreen.route);
+    } else if (route == WalletConfig.toMarketplace) {
       to(ContextUtility.context!, MarketPlace.route);
     } else if (route == WalletConfig.toReferral) {
       to(ContextUtility.context!, ReferralsScreen.route);
@@ -60,11 +63,11 @@ class LinkingService {
       HiveService.getData(HiveKeys.connected).then((connected) {
         to(
           ContextUtility.context!,
-          CharacterDisplayScreen.route,
+          PyjamaAppScreen.route,
         );
       });
     } else {
-      log('Failed to connect to Phantom Wallet');
+      log('$debugKey Failed to connect to Phantom Wallet $route');
     }
   }
 }

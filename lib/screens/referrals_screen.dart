@@ -5,13 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:pyjamaapp/config.dart';
 import 'package:pyjamaapp/config/linking.dart';
 import 'package:pyjamaapp/providers/wallet.dart';
-import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/screens/app_screen.dart';
 import 'package:pyjamaapp/providers/game.dart';
-import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/firebase.dart';
-import 'package:pyjamaapp/services/hive.dart';
 import 'package:pyjamaapp/services/referral_calculator.dart';
-import 'package:pyjamaapp/services/referral_service.dart';
 import 'package:pyjamaapp/services/solana_wallet_service.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/Wrapper.dart';
@@ -54,7 +51,7 @@ class _ReferralsState extends State<ReferralsScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Wrapper(
             title: "My Referrals",
-            onBack: () => to(context, CharacterDisplayScreen.route),
+            onBack: () => to(context, PyjamaAppScreen.route),
             child: const Center(
               child: CircularProgressIndicator(),
             ),
@@ -65,7 +62,7 @@ class _ReferralsState extends State<ReferralsScreen> {
           final referralCode = snapshot.data ?? "";
           return Wrapper(
             title: "My Referrals",
-            onBack: () => to(context, CharacterDisplayScreen.route),
+            onBack: () => to(context, PyjamaAppScreen.route),
             child: SingleChildScrollView(
               child: _ReferralsContent(code: referralCode),
             ),
@@ -309,56 +306,10 @@ class _EarnMorePJCCardState extends State<EarnMorePJCCard> {
   }
 
   void fetchScores() async {
-    var levelScores = await HiveService.getLevlScores();
-    final referralProvider =
-        Provider.of<ReferralProvider>(ContextUtility.context!, listen: false);
-    ReferralService s = ReferralService();
-    var data = await s.getPerLevelReferrals(referralProvider.referrals);
-    var rewardData = {
-      "gameScores": {
-        1: GameScore(
-          levels: levelScores[GameNames.brickBreaker.toString()] ?? {},
-        ),
-        2: GameScore(
-          levels: levelScores[GameNames.fruitNinja.toString()] ?? {},
-        ),
-        3: GameScore(
-          levels: levelScores[GameNames.runner.toString()] ?? {},
-        ),
-      },
-      "nftsHeld": 2,
-      "tokensHeld": 1500,
-      "referralsPerLevel": data,
-    };
+    RewardCalculator calculator = RewardCalculator();
 
-    log("reward data $rewardData");
+    double rewards = await calculator.calculateTokenRewards();
 
-    RewardCalculator calculator = RewardCalculator(
-      gameScores: {
-        1: GameScore(
-          levels: levelScores[GameNames.brickBreaker.toString()] ?? {},
-        ),
-        2: GameScore(
-          levels: levelScores[GameNames.fruitNinja.toString()] ?? {},
-        ),
-        3: GameScore(
-          levels: levelScores[GameNames.runner.toString()] ?? {},
-        ),
-      },
-      nftsHeld: 2,
-      tokensHeld: 1500,
-      referralsPerLevel: data,
-    );
-
-    double rewards = calculator.calculateTotalReward();
-    // {
-    //     GameNames.runner.toString():
-    //         gameScoresData[GameNames.runner.toString()]!,
-    //     GameNames.brickBreaker.toString():
-    //         gameScoresData[GameNames.brickBreaker.toString()]!,
-    //     GameNames.fruitNinja.toString():
-    //         gameScoresData[GameNames.fruitNinja.toString()]!,
-    //   };
     setState(() {
       totalEarnings = rewards;
     });

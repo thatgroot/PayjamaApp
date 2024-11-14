@@ -55,7 +55,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 if (progress == 1.0) {
                   to(
                     context,
-                    // const PyjamaAppScreen(),
+                    // const PyjamaCharacterScreen(),
                     // BrickBreakerLevelsScreen(),
                     GamesScreen.route,
                   );

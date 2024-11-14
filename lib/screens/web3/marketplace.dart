@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/screens/app_screen.dart';
 import 'package:pyjamaapp/services/solana_wallet_service.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/Wrapper.dart';
@@ -12,7 +12,7 @@ class MarketPlace extends StatelessWidget {
     return Wrapper(
       title: "Buy NFTs",
       onBack: () {
-        to(context, CharacterDisplayScreen.route);
+        to(context, PyjamaAppScreen.route);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),

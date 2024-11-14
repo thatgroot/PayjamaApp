@@ -70,6 +70,17 @@ class SolanaWalletService {
     };
   }
 
+  static Map<String, String> _disConnectParams() {
+    return {
+      'dapp_encryption_public_key': base58encode(dAppPublicKey.asTypedList),
+      'cluster':
+          SolanaConfig.cluster == SolanaCluster.devnet ? 'devnet' : 'mainnet',
+      'app_url': LinkingConfig.appUrl,
+      'redirect_link':
+          '${LinkingConfig.deepLink}${WalletConfig.toDisConnected}',
+    };
+  }
+
   static void connect() {
     var params = _connectParams();
     try {
@@ -77,6 +88,23 @@ class SolanaWalletService {
         scheme: LinkingConfig.scheme,
         host: LinkingConfig.host,
         path: WalletConfig.connect,
+        queryParameters: params,
+      );
+
+      launchUrl(uri, mode: LaunchMode.externalNonBrowserApplication);
+    } catch (e) {
+      log('$debugKey $e');
+      throw Error.safeToString(e);
+    }
+  }
+
+  static void disConnect() {
+    var params = _disConnectParams();
+    try {
+      Uri uri = Uri(
+        scheme: LinkingConfig.scheme,
+        host: LinkingConfig.host,
+        path: WalletConfig.disconnect,
         queryParameters: params,
       );
 

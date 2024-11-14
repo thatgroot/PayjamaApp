@@ -14,6 +14,7 @@ import 'package:pyjamaapp/providers/game.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/hive.dart';
 import '../components/fruit_component.dart';
+import 'dart:developer' as dev;
 
 class GamePage extends Component
     with DragCallbacks, HasGameReference<FruitNinjaGame> {
@@ -142,7 +143,7 @@ class GamePage extends Component
     game.router.pushNamed('game-over');
   }
 
-  int baseLevelScore = 10;
+  int baseLevelScore = 30;
 
   void addScore() {
     int level = gameProvider.level;
@@ -153,19 +154,19 @@ class GamePage extends Component
 
     // Set the score increment based on the current level
     if (level == 2) {
-      scoreIncrement = 7;
-    } else if (level == 3) {
       scoreIncrement = 10;
-    } else if (level == 4) {
+    } else if (level == 3) {
       scoreIncrement = 15;
-    } else if (level == 5) {
+    } else if (level == 4) {
       scoreIncrement = 20;
-    } else if (level == 6) {
+    } else if (level == 5) {
       scoreIncrement = 25;
-    } else if (level == 7) {
+    } else if (level == 6) {
       scoreIncrement = 30;
-    } else if (level == 8) {
+    } else if (level == 7) {
       scoreIncrement = 35;
+    } else if (level == 8) {
+      scoreIncrement = 40;
     } else {
       scoreIncrement = 1;
     }
@@ -192,9 +193,8 @@ class GamePage extends Component
     mistakeCount++;
     _mistakeTextComponent?.text = 'Mistake: $mistakeCount';
     if (mistakeCount >= 10) {
+      dev.log("mistakes $mistakeCount");
       HiveService.saveCurrentGameScore(gameProvider.score);
-
-      game.resetGame();
       gameOver();
     }
   }

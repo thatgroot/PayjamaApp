@@ -58,7 +58,7 @@ class SideBar extends StatelessWidget {
                     GestureDetector(
                       onTap: () {
                         // onClose();
-                        to(ContextUtility.context!, GamesScreen.route);
+                        to(ContextUtility.context!, UserProfile.route);
                       },
                       child: Container(
                         width: 44,

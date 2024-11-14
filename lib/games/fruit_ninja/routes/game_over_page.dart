@@ -70,7 +70,10 @@ class GameOverPage extends Component
   bool containsLocalPoint(Vector2 point) => true;
 
   @override
-  void onTapUp(TapUpEvent event) => game.router
-    ..pop()
-    ..pushNamed('home', replace: true);
+  void onTapUp(TapUpEvent event) {
+    game.resetGame();
+    game.router
+      ..pop()
+      ..pushNamed('home', replace: true);
+  }
 }

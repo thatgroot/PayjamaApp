@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pyjamaapp/providers/wallet.dart';
-import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/screens/app_screen.dart';
 import 'package:pyjamaapp/screens/name_input_screen.dart';
 import 'package:pyjamaapp/screens/wallet_screen.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
@@ -40,7 +40,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             .then((doc) {
           log("exists ${doc.data()}");
           if (doc.exists) {
-            to(ContextUtility.context!, CharacterDisplayScreen.route);
+            to(ContextUtility.context!, PyjamaAppScreen.route);
           }
         });
       }

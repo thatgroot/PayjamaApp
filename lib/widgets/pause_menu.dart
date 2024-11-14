@@ -2,6 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:pyjamaapp/screens/games.dart';
+import 'package:pyjamaapp/services/context_utility.dart';
+import 'package:pyjamaapp/utils/navigation.dart';
 
 import '/widgets/hud.dart';
 import '../games/pyjama_game/game.dart';
@@ -85,11 +88,7 @@ class PauseMenu extends StatelessWidget {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        game.overlays.remove(PauseMenu.id);
-                        game.overlays.add(MainMenu.id);
-                        game.resumeEngine();
-                        game.reset();
-                        AudioManager.instance.resumeBgm();
+                        to(ContextUtility.context!, GamesScreen.route);
                       },
                       child: const Text(
                         'Exit',

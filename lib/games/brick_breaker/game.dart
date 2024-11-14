@@ -58,7 +58,9 @@ class BrickBreakerGame extends FlameGame
     const int brickColumns = 6;
     const int brickRows = 6;
 
-    const double brickWidth = 58;
+    log("game size for bricks breaker is ${size.toString()}");
+
+    double brickWidth = double.parse(size[0].toStringAsFixed(2)) / 6;
     const double brickHeight = 28;
     const double topPadding = 100;
     const double leftPadding = 10;

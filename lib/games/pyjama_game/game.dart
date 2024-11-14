@@ -109,8 +109,10 @@ class PyjamaRunnerGame extends FlameGame
   // This method remove all the actors from the game.
   void _disconnectActors() {
     _dino.removeFromParent();
-    _enemyManager.removeAllEnemies();
-    _enemyManager.removeFromParent();
+    if (!_enemyManager.isRemoved) {
+      _enemyManager.removeAllEnemies();
+      _enemyManager.removeFromParent();
+    }
   }
 
   // This method reset the whole game world to initial state.

@@ -1,10 +1,10 @@
 import 'dart:developer';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pyjamaapp/games/brick_breaker/audio_manager.dart';
 import 'package:pyjamaapp/providers/game.dart';
+import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/hive.dart';
 import 'package:pyjamaapp/widgets/app/sections/popover_container.dart';
 import 'package:pyjamaapp/widgets/app/toggle.dart';
@@ -43,7 +43,8 @@ class GameSettingsPopup extends StatefulWidget {
 class GameSettingsPopupState extends State<GameSettingsPopup> {
   bool bgmEnabled = true;
   bool soundEnabled = true;
-
+  GameProvider provider =
+      Provider.of<FruitNinjaGameProvider>(ContextUtility.context!);
   @override
   void initState() {
     super.initState();
@@ -147,14 +148,14 @@ class GameSettingsPopupState extends State<GameSettingsPopup> {
                             const SizedBox(
                               height: 12,
                             ),
-                            GameInfo(
-                              label: "Coins :",
-                              count: math.Random().nextInt(1000).toString(),
-                              postImage: const Image(
-                                image:
-                                    AssetImage("assets/images/app/pcoin.png"),
-                              ),
-                            ),
+                            // GameInfo(
+                            //   label: "Score :",
+                            //   count: "${provider.score}",
+                            //   postImage: const Image(
+                            //     image:
+                            //         AssetImage("assets/images/app/pcoin.png"),
+                            //   ),
+                            // ),
                           ],
                         )
                       : Container(

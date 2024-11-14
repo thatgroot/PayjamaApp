@@ -1,25 +1,39 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pyjamaapp/services/referral_calculator.dart';
 import 'package:pyjamaapp/widgets/app/pyjama/side_bar.dart';
 
-class CharacterDisplayScreen extends StatefulWidget {
-  const CharacterDisplayScreen({super.key});
+class PyjamaAppScreen extends StatefulWidget {
+  const PyjamaAppScreen({super.key});
   static String route = "/character_display";
 
   @override
-  State<CharacterDisplayScreen> createState() => _CharacterDisplayScreenState();
+  State<PyjamaAppScreen> createState() => _PyjamaAppScreenState();
 }
 
-class _CharacterDisplayScreenState extends State<CharacterDisplayScreen> {
+class _PyjamaAppScreenState extends State<PyjamaAppScreen> {
+  double earnings = 0;
   @override
   void initState() {
     super.initState();
 
+    init();
+  }
+
+  void init() async {
     // Lock orientation to portrait when entering this screen
-    SystemChrome.setPreferredOrientations([
+    await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+    RewardCalculator calculator = RewardCalculator();
+    var rewardsTotal = await calculator.calculateTokenRewards();
+
+    setState(() {
+      earnings = rewardsTotal;
+    });
   }
 
   @override
@@ -97,7 +111,7 @@ class _CharacterDisplayScreenState extends State<CharacterDisplayScreen> {
         children: [
           _buildTopCard(
             icon: Icons.emoji_events,
-            value: '153 PJC',
+            value: '$earnings PJC',
             color: const Color(0xFFFFD33A),
           ),
           IconButton(

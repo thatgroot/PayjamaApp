@@ -10,8 +10,8 @@ import 'services/context_utility.dart';
 
 import 'screens/account/user_profile.dart';
 import 'screens/referrals_screen.dart';
-import 'screens/pyjama/character_display.dart';
-import 'screens/pyjama/app_screen.dart';
+import 'screens/app_screen.dart';
+import 'screens/pyjama/character_screen.dart';
 import 'screens/brick_breaker/brick_breaker_screen.dart';
 import 'screens/loading_screen.dart';
 import 'screens/brick_breaker/brick_breaker_levels.dart';
@@ -46,8 +46,8 @@ final goRouter = GoRouter(
     _route(LoadingScreen.route, const LoadingScreen()),
     _route(WalletScreen.route, const WalletScreen()),
     _route(GamesScreen.route, const GamesScreen()),
+    _route(PyjamaCharacterScreen.route, const PyjamaCharacterScreen()),
     _route(PyjamaAppScreen.route, const PyjamaAppScreen()),
-    _route(CharacterDisplayScreen.route, const CharacterDisplayScreen()),
     _route(BrickBreakerScreen.route, const BrickBreakerScreen()),
     _route(BrickBreakerLevelsScreen.route, const BrickBreakerLevelsScreen()),
     _route(BrickBreaker.route, const BrickBreaker()),
@@ -98,13 +98,14 @@ class WalletConfig {
     38
   ];
   static const String toConnected = 'connected';
+  static const String toDisConnected = 'disconnect';
   static const String toMarketplace = 'marketplace';
   static const String toReferral = 'referral';
 
   // Paths
   static const String connect = '/ul/v1/connect';
-  static const String signAndSendTransaction = '/ul/v1/signAndSendTransaction';
   static const String disconnect = '/ul/v1/disconnect';
+  static const String signAndSendTransaction = '/ul/v1/signAndSendTransaction';
   static const String signTransaction = '/ul/v1/signTransaction';
 
   static const String signAllTransactions = '/ul/v1/signAllTransactions';

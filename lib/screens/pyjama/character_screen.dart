@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/screens/app_screen.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 import 'package:pyjamaapp/widgets/app/wrapper.dart';
 
-class PyjamaAppScreen extends StatefulWidget {
-  const PyjamaAppScreen({super.key});
+class PyjamaCharacterScreen extends StatefulWidget {
+  const PyjamaCharacterScreen({super.key});
   static String route = "/app_screen";
   @override
-  State<PyjamaAppScreen> createState() => _PyjamaAppScreenState();
+  State<PyjamaCharacterScreen> createState() => _PyjamaCharacterScreenState();
 }
 
-class _PyjamaAppScreenState extends State<PyjamaAppScreen> {
+class _PyjamaCharacterScreenState extends State<PyjamaCharacterScreen> {
   @override
   void initState() {
     super.initState();
@@ -87,7 +87,7 @@ class _PyjamaAppScreenState extends State<PyjamaAppScreen> {
                 itemBuilder: (context, index) {
                   return TextButton(
                     onPressed: () {
-                      to(context, CharacterDisplayScreen.route);
+                      to(context, PyjamaAppScreen.route);
                     },
                     child: Padding(
                       padding: EdgeInsets.only(

@@ -4,7 +4,7 @@ import 'package:pyjamaapp/games/brick_breaker/brick_breaker.dart';
 import 'package:pyjamaapp/games/fruit_ninja/fruit_ninja.dart';
 import 'package:pyjamaapp/games/pyjama_game/pyjama_runner.dart';
 import 'package:pyjamaapp/providers/game.dart';
-import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/screens/app_screen.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/solana_wallet_service.dart';
 import 'package:pyjamaapp/services/hive.dart';
@@ -43,7 +43,7 @@ class _GamesScreenState extends State<GamesScreen> {
     return Wrapper(
       title: "Play Games",
       onBack: () {
-        to(context, CharacterDisplayScreen.route);
+        to(context, PyjamaAppScreen.route);
       },
       child: SingleChildScrollView(
         child: SizedBox(

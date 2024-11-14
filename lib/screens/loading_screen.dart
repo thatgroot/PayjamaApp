@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:pyjamaapp/screens/pyjama/app_screen.dart';
+import 'package:pyjamaapp/screens/pyjama/character_screen.dart';
 import 'package:pyjamaapp/screens/wallet_screen.dart';
 import 'package:pyjamaapp/services/context_utility.dart';
 import 'package:pyjamaapp/services/hive.dart';
@@ -33,7 +33,9 @@ class _LoadingScreenState extends State<LoadingScreen> {
           log('Loading Screen -> Progress: $progress $connected');
           to(
             ContextUtility.context!,
-            connected == null ? WalletScreen.route : PyjamaAppScreen.route,
+            connected == null
+                ? WalletScreen.route
+                : PyjamaCharacterScreen.route,
           );
         });
       } catch (e) {

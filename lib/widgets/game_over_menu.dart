@@ -2,7 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pyjamaapp/screens/pyjama/character_display.dart';
+import 'package:pyjamaapp/screens/app_screen.dart';
+import 'package:pyjamaapp/screens/games.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 
 import '/widgets/hud.dart';
@@ -66,9 +67,9 @@ class GameOverMenu extends StatelessWidget {
                       onPressed: () {
                         game.overlays.remove(GameOverMenu.id);
                         game.overlays.add(Hud.id);
-                        game.resumeEngine();
                         game.reset();
                         game.startGamePlay();
+                        game.resumeEngine();
                         AudioManager.instance.resumeBgm();
                       },
                     ),
@@ -80,7 +81,8 @@ class GameOverMenu extends StatelessWidget {
                         ),
                       ),
                       onPressed: () {
-                        to(context, CharacterDisplayScreen.route);
+                        // game.reset();
+                        to(context, GamesScreen.route);
                       },
                     ),
                   ],
