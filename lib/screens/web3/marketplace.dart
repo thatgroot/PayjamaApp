@@ -33,7 +33,7 @@ class MarketPlace extends StatelessWidget {
                   crossAxisCount: 2,
                   crossAxisSpacing: 12.0,
                   mainAxisSpacing: 12.0,
-                  childAspectRatio: 0.59,
+                  childAspectRatio: 0.62,
                 ),
                 itemCount: 6, // Number of items to display
                 itemBuilder: (context, index) {
@@ -242,7 +242,7 @@ class MarketPlace extends StatelessWidget {
                 GestureDetector(
                   onTap: () async {
                     SolanaWalletService walletService = SolanaWalletService();
-                    await walletService.mintFn();
+                    await walletService.openMintWebsite();
                   },
                   child: Container(
                     width: 129,

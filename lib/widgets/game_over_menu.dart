@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pyjamaapp/screens/app_screen.dart';
 import 'package:pyjamaapp/screens/games.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
 

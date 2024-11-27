@@ -8,7 +8,6 @@ import 'package:pyjamaapp/utils/navigation.dart';
 
 import '/widgets/hud.dart';
 import '../games/pyjama_game/game.dart';
-import '/widgets/main_menu.dart';
 import '../games/pyjama_game/audio_manager.dart';
 import '/models/player_data.dart';
 

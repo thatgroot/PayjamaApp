@@ -21,6 +21,7 @@ Future<void> main() async {
   SolanaWalletService.init();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(
     MultiProvider(
       providers: appProviders,

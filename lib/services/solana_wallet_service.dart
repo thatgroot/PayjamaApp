@@ -148,7 +148,6 @@ class SolanaWalletService {
   }
 
   Future<Uri> mintNFT(String toAddress, String redirectTo) async {
-    // Get latest blockhash
     final String blockhash = await client.rpcClient
         .getLatestBlockhash()
         .then((b) => b.value.blockhash);
@@ -475,8 +474,16 @@ class SolanaWalletService {
   }
 
   Future<void> mintFn() async {
-    String payer =
-        await HiveService.getData(HiveKeys.phantomEncryptionPublicKey);
+    // Get latest blockhash
+    client = SolanaClient(
+      websocketUrl: Uri.parse(
+        SolanaConfig.testnetWsUrl,
+      ),
+      rpcUrl: Uri.parse(
+        SolanaConfig.testnetRpcUrl,
+      ),
+    );
+    String payer = await HiveService.getData(HiveKeys.userPublicKey);
 
     final String blockhash = await client.rpcClient
         .getLatestBlockhash()
@@ -484,7 +491,7 @@ class SolanaWalletService {
 
     final tokenAccount = web3.Pubkey.fromBase58(
         (await findAssociatedTokenAddress(payer)).toBase58());
-    log('$debugKey has account $tokenAccount');
+    log('account $tokenAccount :: $payer');
 
     var createAtaInstruction = web3_programs.AssociatedTokenProgram.create(
       fundingAccount: web3.Pubkey.fromBase58(payer),
@@ -524,6 +531,8 @@ class SolanaWalletService {
       'transaction': serializedTx,
       'session': session,
     };
+
+    log("payload $payloadToEncrypt");
     Map<String, dynamic> encryptedPayload =
         await _encryptPayload(payloadToEncrypt);
 
@@ -559,5 +568,33 @@ class SolanaWalletService {
       return int.parse(tokenAmount.amount);
     }
     return 0;
+  }
+
+  Future<void> openMintWebsite() async {
+    // Encode the URLs
+    String encodedUrl =
+        Uri.encodeComponent("https://outcast-themorbies.vercel.app/");
+    String encodedRef = Uri.encodeComponent(
+      LinkingConfig.deepLink,
+    ); // Replace with your app's URL or ref
+
+    // String path = "ul/browse/$encodedUrl?ref=$encodedRef";
+    // Create the URI using the provided scheme, host, and path
+    Uri uri = Uri(
+      scheme: LinkingConfig.scheme,
+      host: LinkingConfig.host,
+      path: "ul/browse/$encodedUrl?=$encodedRef",
+      queryParameters: {
+        'ref': encodedRef,
+      }, // Add the target URL as a query parameter
+    );
+    log("open path  ${uri.toString()}");
+
+    // Launch the URI using url_launcher
+    try {
+      await launchUrl(uri);
+    } catch (e) {
+      log("open link error $e");
+    }
   }
 }

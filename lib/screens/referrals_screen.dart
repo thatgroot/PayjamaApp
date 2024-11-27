@@ -8,6 +8,7 @@ import 'package:pyjamaapp/providers/wallet.dart';
 import 'package:pyjamaapp/screens/app_screen.dart';
 import 'package:pyjamaapp/providers/game.dart';
 import 'package:pyjamaapp/services/firebase.dart';
+import 'package:pyjamaapp/services/hive.dart';
 import 'package:pyjamaapp/services/referral_calculator.dart';
 import 'package:pyjamaapp/services/solana_wallet_service.dart';
 import 'package:pyjamaapp/utils/navigation.dart';
@@ -34,9 +35,14 @@ class _ReferralsState extends State<ReferralsScreen> {
     final FirestoreService firestoreService = FirestoreService();
 
     try {
+      String key = await HiveService.getData(HiveKeys.userPublicKey);
+
+      log("wallet public key $key ${walletProvider.publicKey!}");
       final doc =
           await firestoreService.getDocument("info", walletProvider.publicKey!);
-      return doc.get('id') as String;
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      log("existing code data $data ${data['id']}");
+      return data['id'] as String;
     } catch (error) {
       log("Error fetching document: $error");
       return "";
@@ -251,7 +257,8 @@ class _ReferralsContentState extends State<_ReferralsContent> {
                 ShareInviteLinkCard(
                   onShare: () async {
                     await Share.share(
-                        'Join Pyjama Runner using my referral code: ${widget.code}');
+                      'Join Pyjama Runner using my referral code: ${widget.code}',
+                    );
                   },
                   code: widget.code,
                 ),
